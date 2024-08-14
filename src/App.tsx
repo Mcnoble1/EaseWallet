@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-
+import { TbdexHttpClient } from '@tbdex/http-client';
+import { PFIs } from './utils/helpers';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Convert from './pages/Payments/Convert';
@@ -21,6 +22,26 @@ function App() {
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
+  }, []);
+
+  useEffect(() => {
+    const prefetchOfferings = async () => {
+      try {
+        const offeringsData: { [key: string]: any[] } = {};
+        for (const pfi of PFIs) {
+          const offerings = await TbdexHttpClient.getOfferings({
+            pfiDid: pfi.did
+          });
+          offeringsData[pfi.did] = offerings;
+        }
+        localStorage.setItem('offerings', JSON.stringify(offeringsData));
+      } catch (error) {
+        console.error('Failed to prefetch offerings:', error);
+      }
+    };
+    if (!localStorage.getItem('offeringsData')) {
+      prefetchOfferings();
+    }
   }, []);
 
   return loading ? (

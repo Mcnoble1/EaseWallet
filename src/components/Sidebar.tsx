@@ -200,20 +200,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Transfer
                             </NavLink>
                           </li>
-
-                          <li>
-                            <NavLink
-                              to="/payments/pfi/:did"
-                              className={`group relative flex items-center gap-2.5 rounded-md py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-secondary ${
-                                (pathname === '/payments' ||
-                                  pathname.includes('pfi')) &&
-                                'bg-secondary'
-                              }`}
-                            >
-                              PFI
-                            </NavLink>
-                          </li>
-                         
                         </ul>
                       </div>
                       {/* <!-- Dropdown Menu End --> */}

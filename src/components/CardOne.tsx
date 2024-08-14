@@ -1,81 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDollarSign, faPiggyBank, faCreditCard, faChartLine } from '@fortawesome/free-solid-svg-icons';
-import { IconType } from 'react-icons';
-import { FaBitcoin } from 'react-icons/fa';
-import { RiMoneyDollarCircleLine } from 'react-icons/ri';
-import Flag from 'react-flagkit';
-
-import { TbdexHttpClient } from '@tbdex/http-client';
-
-const PFIs = [
-  {
-    did: 'did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y',
-    name: 'AquaFinance Capital',
-    description: 'Provides exchanges with the Ghanaian Cedis: GHS to USDC, GHS to KES',
-    icon: faDollarSign,
-    backgroundColor: '#1e3a8a' // Navy Blue
-  },
-  {
-    did: 'did:dht:zkp5gbsqgzn69b3y5dtt5nnpjtdq6sxyukpzo68npsf79bmtb9zy',
-    name: 'Flowback Financial',
-    description: 'Offers international rates with various currencies - USD to GBP, GBP to CAD.',
-    icon: faPiggyBank,
-    backgroundColor: '#065f46' // Dark Green
-  },
-  {
-    did: 'did:dht:enwguxo8uzqexq14xupe4o9ymxw3nzeb9uug5ijkj9rhfbf1oy5y',
-    name: 'Vertex Liquid Assets',
-    description: 'Offers exchange rates with the South African Rand: ZAR to BTC and EUR to ZAR.',
-    icon: faCreditCard,
-    backgroundColor: '#b91c1c' // Dark Red
-  },
-  {
-    did: 'did:dht:ozn5c51ruo7z63u1h748ug7rw5p1mq3853ytrd5gatu9a8mm8f1o',
-    name: 'Titanium Trust',
-    description: 'Offers exchange rates with the South African Rand: ZAR to BTC and EUR to ZAR.',
-    icon: faChartLine,
-    backgroundColor: '#4a5568' // Dark Gray
-  }
-];
-
-// Mapping currency codes to flag components or custom icons
-const currencyIcons: { [key: string]: IconType | JSX.Element } = {
-  GHS: <Flag country="GH" />, // Ghana
-  NGN: <Flag country="NG" />, // Nigeria
-  KES: <Flag country="KE" />, // Kenya
-  USD: <Flag country="US" />, // USA
-  AUD: <Flag country="AU" />, // Australia
-  GBP: <Flag country="GB" />, // UK
-  EUR: <Flag country="EU" />, // Europe
-  ZAR: <Flag country="ZA" />, // South Africa
-  MXN: <Flag country="MX" />, // Mexico
-  BTC: <FaBitcoin color="orange" />, // Bitcoin
-  USDC: <RiMoneyDollarCircleLine color="blue" />, // USDC
-};
+import { PFIs, currencyIcons} from '../utils/helpers';
 
 const CardOne = () => {
   const [selectedOfferings, setSelectedOfferings] = useState<{ [key: string]: any[] }>({});
   const [visibleOfferings, setVisibleOfferings] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    const prefetchOfferings = async () => {
-      try {
-        const offeringsData: { [key: string]: any[] } = {};
-        for (const pfi of PFIs) {
-          const offerings = await TbdexHttpClient.getOfferings({
-            pfiDid: pfi.did
-          });
-          offeringsData[pfi.did] = offerings;
-        }
-        setSelectedOfferings(offeringsData);
-      } catch (error) {
-        console.error('Failed to prefetch offerings:', error);
-      }
-    };
-
-    prefetchOfferings();
+    const offeringsData = JSON.parse(localStorage.getItem('offerings') || '{}');
+    if (offeringsData) {
+      setSelectedOfferings(offeringsData);
+    }
   }, []);
 
   const navigate = useNavigate();
