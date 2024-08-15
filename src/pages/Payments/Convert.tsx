@@ -45,7 +45,7 @@ const Categories: React.FC = () => {
                 <Breadcrumb pageName="Convert" /> 
               </div>
 
-              <div className="flex items-center justify-center">
+              <div className="w-full">
                  <AllCategories />
               </div>
               </div>
