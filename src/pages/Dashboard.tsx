@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import CardOne from '../components/CardOne.tsx';
 import CardThree from '../components/CardThree.tsx';
-import FeedbacksTable from '../components/FeedbacksTable.tsx';
+import FeedbacksTable from '../components/TransactionsTable.tsx';
 const Dashboard = () => {
     const navigate = useNavigate();
 

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filterOfferings, PFIs } from '../utils/helpers';
+import { VerifiableCredential, PresentationExchange } from "@web5/credentials";
+
 
 const steps = [
   'Currency Input',
@@ -77,7 +79,7 @@ const CurrencyInputStep: React.FC<{ onNext: () => void; onFetchOfferings: any }>
 
   const fetchOfferings = async () => {
     if (!formData.payinCurrency || !formData.payoutCurrency) {
-      toast.error('Please select both currencies.', { autoClose: 1200 });
+      toast.info('Please select both currencies.', { autoClose: 1200 });
       return;
     }
     setLoading(true);
@@ -183,7 +185,35 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void }> = ({ off
 };
 
 // Placeholder for other steps
-const KycStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+const KycStep: React.FC<{  offerings: any[]; onNext: () => void }> = ({ offerings, onNext }) => {
+
+  const kyc = () => {
+    offerings?.map((offering, index) => {
+      console.log("KYC")
+      const presentationDefinition = offering.data.requiredClaims;
+      console.log(presentationDefinition);
+    });
+  };
+  kyc();
+
+  const satisfiesOfferingRequirements = (offering, credentials) => {
+    if(credentials.length === 0 || !offering.data.requiredClaims) {
+      return false;
+    }
+
+    try {
+      // Validate customer's VCs against the offering's presentation definition
+      PresentationExchange.satisfiesPresentationDefinition({
+        vcJwts: credentials,
+        presentationDefinition: offering.data.requiredClaims,
+      })
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
+  return (
   <div>
     <h4 className="text-title-sm mb-4 font-semibold text-white">KYC Check</h4>
     <p className="text-white">Performing KYC...</p>
@@ -194,7 +224,8 @@ const KycStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
       Proceed
     </button>
   </div>
-);
+  );
+};
 
 const QuoteStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <div>
@@ -252,9 +283,9 @@ const Convert: React.FC = () => {
   const filteredOfferings = filterOfferings(payinCurrency, payoutCurrency);
   setOfferings(filteredOfferings);
   if (filteredOfferings.length === 0) {
-    toast.error('No offerings found for the selected currencies.');
+    toast.info('No offerings found for the selected currencies.', { autoClose: 1500 });
   } else {
-    toast.success(`${filteredOfferings.length} offerings found!`);
+    toast.success(`${filteredOfferings.length} offerings found!`, { autoClose: 1500 });
   }
 };
 
@@ -266,7 +297,7 @@ return (
         <CurrencyInputStep onNext={handleNextStep} onFetchOfferings={fetchOfferings} />
       )}
       {currentStep === 1 && <OfferingsStep offerings={offerings} onNext={handleNextStep} />}
-      {currentStep === 2 && <KycStep onNext={handleNextStep} />}
+      {currentStep === 2 && <KycStep onNext={handleNextStep} offerings={offerings} />}
       {currentStep === 3 && <QuoteStep onNext={handleNextStep} />}
       {currentStep === 4 && <OrderStep onNext={handleNextStep} />}
       {currentStep === 5 && <OrderCompletedStep />}

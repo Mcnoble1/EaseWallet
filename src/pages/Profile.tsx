@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import axios from 'axios'; 
 import { DidDht } from '@web5/dids'
 import Header from '../components/Header.tsx';
 import Sidebar from '../components/Sidebar.tsx';
-import CardOne from '../components/CardOne.tsx';
-import CardThree from '../components/CardThree.tsx';
+import Credentials from '../components/Credentials.tsx';
 import welcome from '../images/user/welcome.svg';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCopy } from '@fortawesome/free-solid-svg-icons';
 const Profile = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDid, setUserDid] = useState<any>("");
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     initializeDid();
   }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(userDid);
+    setIsCopied(true);
+
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 3000);
+  };
 
   const initializeDid = async () => {
     try {
@@ -45,8 +53,24 @@ const Profile = () => {
           <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
           <div className="flex h-25 justify-between rounded-lg bg-tertiary py-3 px-7.5 shadow-default">
             <div className="flex justify-between">
-              <div>
-                <p className="text-white text-lg font-bold">Good Morning {userDid}</p>
+              <div className='inline-flex space-x-3 justify-between'>
+                <p className="text-white text-lg font-bold">Your DID: {userDid?.slice(0, 20) + "..." + userDid?.slice(-8)}</p>
+                <button
+                    className="flex gap-2"
+                    onClick={handleCopy}
+                    type="button"
+                  >
+                   <FontAwesomeIcon icon={faCopy} style={{color: "#ffffff",}} />
+                    <div>
+                      {isCopied ? (
+                        <p className="bg-primary text-sm text-white p-1 rounded-3xl">
+                          Copied!
+                        </p>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  </button>
               </div>
             </div>
             
@@ -55,8 +79,8 @@ const Profile = () => {
             </div>
           </div>
             <h2 className='text-center text-2xl text-white font-bold mb-5 mt-5'>Your Credentials</h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
-              <CardOne />
+            <div className="">
+              <Credentials userDID={userDid}/>
             </div>
 
             <div className="mt-4">

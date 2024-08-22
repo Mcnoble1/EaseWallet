@@ -11,6 +11,7 @@ const CardOne = () => {
     const offeringsData = JSON.parse(localStorage.getItem('offerings') || '{}');
     if (offeringsData) {
       setSelectedOfferings(offeringsData);
+      console.log(offeringsData);
     }
   }, []);
 
