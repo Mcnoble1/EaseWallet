@@ -1,14 +1,21 @@
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import axios from 'axios'
 import { Jwt, VerifiableCredential, PresentationExchange } from "@web5/credentials";
+import { currencyIcons } from '../utils/helpers';
+import Badge from '../images/badge.png';
 
+interface credentialDetails {
+  title: string;
+  name: string;
+  countryCode: string;
+  issuanceDate: string;
+}
 
 
 const Credentials = ({userDID}: any) => {
   const [popupOpenMap, setPopupOpenMap] = useState<{ [key: number]: boolean }>({});
   const [popupOpen, setPopupOpen] = useState(false);
-  const [credentialDetails, setCredentialDetails] = useState<any[]>([]);
-
+  const [credentialDetails, setCredentialDetails] = useState<credentialDetails>([]);
   const [formData, setFormData] = useState<{ name: string; countryCode: string }>({
     name: '',
     countryCode: '',
@@ -61,9 +68,7 @@ const Credentials = ({userDID}: any) => {
         .then((response) => {
             console.log(response);
             console.log(response.data);
-            const parsedVc = VerifiableCredential.parseJwt({ vcJwt: response.data });
-            console.log("ParsedVC:", parsedVc);
-            setCredentialDetails(response.data);
+            localStorage.setItem('credentialJWT', response.data)
             setPopupOpen(false);
         })
         .catch((error) => {
@@ -71,28 +76,42 @@ const Credentials = ({userDID}: any) => {
         });
   }
 
-  // const renderCredential = (credentialJwt) => {
-  //   const vc = Jwt.parse({ jwt: credentialJwt }).decoded.payload['vc']
-  //   return {
-  //     title: vc.type[vc.type.length - 1].replace(/(?<!^)(?<![A-Z])[A-Z](?=[a-z])/g, ' $&'), // get the last credential type in the array and format it with spaces
-  //     name: vc.credentialSubject['name'],
-  //     countryCode: vc.credentialSubject['countryOfResidence'],
-  //     issuanceDate: new Date(vc.issuanceDate).toLocaleDateString(undefined, {dateStyle: 'medium'}),
-  //   }
-  // }
+  const credentialJWT = localStorage.getItem('credentialJWT') || '';
 
+  useEffect(() => {
+    if (!credentialJWT) {
+      return;
+    }
+    const vc: any = Jwt.parse({ jwt: credentialJWT }).decoded.payload['vc']
+    setCredentialDetails({
+    title: vc.type[vc.type.length - 1].replace(/(?<!^)(?<![A-Z])[A-Z](?=[a-z])/g, ' $&'),
+    name: vc.credentialSubject['name'],
+    countryCode: vc.credentialSubject['countryOfResidence'],
+    issuanceDate: new Date(vc.issuanceDate).toLocaleDateString(undefined, {dateStyle: 'medium'}),
+  })
+  }, []);
 
   return (
     <>
-      {credentialDetails.length > 0 ? (
+      {Object.keys(credentialDetails).length > 0 ? (
     <main>
-      {/* {credentialDetails.map((credential, index) => ( */}
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
-      <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          {credentialDetails}
+    <div className="grid text-black grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
+      <div className="flex justify-between overflow-hidden p-2 rounded-lg border border-stroke bg-white shadow-md shadow-meta-5 dark:border-strokedark dark:bg-boxdark">
+          <div>
+            <p className='text-lg font-bold'>{credentialDetails.title}</p>
+            <p><span className='font-medium'>Owner:</span> {credentialDetails.name}</p>
+            <p><span className='font-medium'>Country:</span> {credentialDetails.countryCode}</p>
+            <p><span className='font-medium'>Date Issued:</span> {credentialDetails.issuanceDate}</p>
+          </div>
+          <div className="flex-shrink-0 ">
+            <img
+              src={Badge}
+              alt="verified badge"
+              className="h-20 w-20 rounded-full" 
+            />
+          </div>
         </div>
     </div>
-      {/* ))} */}
     </main>
     ) : (
       <div className="flex items-center flex-col py-20">
@@ -187,6 +206,8 @@ const Credentials = ({userDID}: any) => {
 };
 
 export default Credentials;
+
+
 
 
 

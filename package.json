@@ -21,7 +21,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@tbdex/http-server": "^1.1.0",
-    "@web5/credentials": "^1.0.3",
+    "@web5/credentials": "^1.1.0",
     "@web5/dids": "^1.1.1",
     "apexcharts": "^3.41.0",
     "axios": "^1.5.0",

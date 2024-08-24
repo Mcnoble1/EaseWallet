@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filterOfferings, PFIs } from '../utils/helpers';
+import { DidDht } from '@web5/dids'
 import { VerifiableCredential, PresentationExchange } from "@web5/credentials";
+import { useNavigate } from 'react-router-dom';
+import { Close, Order, Rfq, TbdexHttpClient } from '@tbdex/http-client'
 
 
 const steps = [
   'Currency Input',
   'See Offerings',
-  'Check Credentials/KYC',
+  'Check Credentials',
   'Get Quote',
   'View Quote',
   'Place Order',
@@ -145,13 +148,18 @@ const CurrencyInputStep: React.FC<{ onNext: () => void; onFetchOfferings: any }>
   );
 };
 
-const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void }> = ({ offerings, onNext }) => {
+const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOffering: (offering: any) => void }> = ({ offerings, onNext, onSelectOffering }) => {
+  const handleOfferingClick = (offering: any) => {
+    onSelectOffering(offering);
+    onNext();
+  };
+
   return (
     <div className='w-[80%]'>
       <h4 className="text-title-sm mb-4 font-semibold text-white">Offerings</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {offerings?.map((offering, index) => (
-          <div key={index} className="bg-tertiary text-white rounded-lg shadow-md p-6">
+          <div key={index} onClick={() => handleOfferingClick(offering)} className="bg-tertiary text-white rounded-lg shadow-md p-6 cursor-pointer hover:bg-opacity-80">
             <h5 className="text-lg font-semibold mb-2">
               {PFIs.find((pfi) => pfi.did === offering.metadata.from)?.name}
             </h5>
@@ -174,30 +182,16 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void }> = ({ off
           </div>
         ))}
       </div>
-      <button
-        onClick={onNext}
-        className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
-      >
-        Proceed
-      </button>
     </div>     
   );
 };
 
-// Placeholder for other steps
-const KycStep: React.FC<{  offerings: any[]; onNext: () => void }> = ({ offerings, onNext }) => {
+const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
+  const credential = localStorage.getItem('credentialJWT');
+  const navigate = useNavigate();
 
-  const kyc = () => {
-    offerings?.map((offering, index) => {
-      console.log("KYC")
-      const presentationDefinition = offering.data.requiredClaims;
-      console.log(presentationDefinition);
-    });
-  };
-  kyc();
-
-  const satisfiesOfferingRequirements = (offering, credentials) => {
-    if(credentials.length === 0 || !offering.data.requiredClaims) {
+  const satisfiesOfferingRequirements = (offering: any, credentials: string[]) => {
+    if (credentials.length === 0 || !offering.data.requiredClaims) {
       return false;
     }
 
@@ -206,39 +200,285 @@ const KycStep: React.FC<{  offerings: any[]; onNext: () => void }> = ({ offering
       PresentationExchange.satisfiesPresentationDefinition({
         vcJwts: credentials,
         presentationDefinition: offering.data.requiredClaims,
-      })
-      return true
+      });
+      return true;
     } catch (e) {
-      return false
+      return false;
     }
-  }
+  };
+
+  const kyc = () => {
+    useEffect(() => {
+    const credentials = credential ? [credential] : [];
+    const satisfiesRequirements = satisfiesOfferingRequirements(selectedOffering, credentials);
+
+    if (satisfiesRequirements) {
+      toast.success("KYC successful! Proceed to request for a Quote");
+    } else {
+      toast.error("KYC failed! Complete Verification to proceed");
+      navigate('/profile');
+    }
+  }, []);
+  };
+
+  // useEffect(() => {
+    kyc(); 
+  // }, []); 
 
   return (
-  <div>
-    <h4 className="text-title-sm mb-4 font-semibold text-white">KYC Check</h4>
-    <p className="text-white">Performing KYC...</p>
-    <button
+    <div>
+      <h4 className="text-title-sm mb-4 font-semibold text-white">KYC Check</h4>
+      <p className="text-white">Performing KYC...</p>
+      <button
       onClick={onNext}
       className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
     >
       Proceed
     </button>
-  </div>
+    </div>
   );
 };
 
-const QuoteStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+
+const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
+  const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const credential = localStorage.getItem('credentialJWT');
+  const credentials = credential ? [credential] : [];
+  const did = localStorage.getItem('userDid');
+  const createExchange = async (offering, amount, payoutPaymentDetails) => {
+    // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
+    const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
+    const selectedCredentials = PresentationExchange.selectCredentials({
+      vcJwts: credentials,
+      presentationDefinition: offering.data.requiredClaims,
+    })
+
+    console.log(selectedOffering)
+
+    // TODO 4: Create RFQ message to Request for a Quote
+    const rfq = Rfq.create({
+      metadata: {
+        from: userDid?.uri,
+        to: offering.metadata.from,
+        protocol: '1.0'
+      },
+      data: {
+        offeringId: selectedOffering.metadata.id,
+        payin: {
+          amount: amount.toString(),
+          kind: offering.data.payin.methods[0].kind,
+          paymentDetails: {
+            accountNumber: '1234567890123456',
+            routingNumber: '12345',
+          }
+        },
+        payout: {
+          kind: offering.data.payout.methods[0].kind,
+          paymentDetails: payoutPaymentDetails
+        },
+        claims: selectedCredentials
+      },
+    })
+
+    try{
+      // TODO 5: Verify offering requirements with RFQ - rfq.verifyOfferingRequirements(offering)
+      rfq.verifyOfferingRequirements(offering)
+    } catch (e) {
+      // handle failed verification
+      console.log('Offering requirements not met', e)
+    }
+
+    // TODO 6: Sign RFQ message
+    await rfq.sign(userDid)
+
+    console.log('RFQ:', rfq)
+
+    try {
+      // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
+      await TbdexHttpClient.createExchange(rfq)
+    }
+    catch (error) {
+      console.error('Failed to create exchange:', error);
+    }
+  }
+
+  createExchange(selectedOffering, 100, {
+    address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+  });
+
+  const generateExchangeStatusValues = (exchangeMessage) => {
+    if (exchangeMessage instanceof Close) {
+      if (exchangeMessage.data.reason?.toLowerCase().includes('complete') || exchangeMessage.data.reason?.toLowerCase().includes('success') ) {
+        return 'completed'
+      } else if (exchangeMessage.data.reason?.toLowerCase().includes('expired')) {
+        return exchangeMessage.data.reason.toLowerCase()
+      } else if (exchangeMessage.data.reason?.toLowerCase().includes('cancelled')) {
+        return 'cancelled'
+      } else {
+        return 'failed'
+      }
+    }
+    return exchangeMessage.kind
+  }
+
+
+  const formatMessages = (exchanges) => {
+    const formattedMessages = exchanges.map(exchange => {
+        const latestMessage = exchange[exchange.length - 1]
+        const rfqMessage = exchange.find(message => message.kind === 'rfq')
+        const quoteMessage = exchange.find(message => message.kind === 'quote')
+        // console.log('quote', quoteMessage)
+        const status = generateExchangeStatusValues(latestMessage)
+        const fee = quoteMessage?.data['payin']?.['fee']
+        const payinAmount = quoteMessage?.data['payin']?.['amount']
+        const payoutPaymentDetails = rfqMessage.privateData?.payout.paymentDetails
+        return {
+          id: latestMessage.metadata.exchangeId,
+          payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
+          payinCurrency: quoteMessage.data['payin']?.['currencyCode'] ?? null,
+          payoutAmount: quoteMessage?.data['payout']?.['amount'] ?? null,
+          payoutCurrency: quoteMessage.data['payout']?.['currencyCode'],
+          status,
+          createdTime: rfqMessage.createdAt,
+          ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
+          from: 'You',
+          to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
+          pfiDid: rfqMessage.metadata.to
+        }
+      })
+
+      return formattedMessages;
+  }
+
+  const fetchExchanges = async (pfiUri) => {
+    const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
+    try {
+      // TODO 8: get exchanges from the PFI
+      const exchanges = await TbdexHttpClient.getExchanges({
+        pfiDid: pfiUri,
+        did: userDid
+      });
+
+      const mappedExchanges = formatMessages(exchanges)
+      return mappedExchanges
+    } catch (error) {
+      console.error('Failed to fetch exchanges:', error);
+    }
+  }
+
+  const getQuote = async () => {
+    const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
+    const exchanges = await fetchExchanges(selectedOffering.metadata.from)
+    console.log('Exchanges:', exchanges)
+  }
+
+  const addClose = async (exchangeId, pfiUri, reason) => {
+    const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
+
+    // TODO 9: Create Close message, sign it, and submit it to the PFI
+    const close = Close.create({
+      metadata: {
+        from: userDid.uri,
+        to: pfiUri,
+        exchangeId,
+      },
+      data: {
+        reason
+      }
+    })
+
+    await close.sign(userDid)
+    try {
+      // send Close message
+      await TbdexHttpClient.submitClose(close)
+    }
+    catch (error) {
+      console.error('Failed to close exchange:', error);
+    }
+  }
+
+  const addOrder = async (exchangeId, pfiUri) => {
+    const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
+    // TODO 10: Create Order message, sign it, and submit it to the PFI
+    const order = Order.create({
+      metadata: {
+        from: userDid.uri,
+        to: pfiUri,
+        exchangeId
+      }
+    })
+
+    await order.sign(userDid)
+    try {
+      // Send order message
+      return await TbdexHttpClient.submitOrder(order)
+    } catch (error) {
+      console.error('Failed to submit order:', error);
+    }
+  };
+
+  const updateExchanges = (newTransactions) => {
+    const existingExchangeIds = transactions.map(tx => tx.id);
+    const updatedExchanges = [...transactions];
+
+    newTransactions.forEach(newTx => {
+      const existingTxIndex = updatedExchanges.findIndex(tx => tx.id === newTx.id);
+      if (existingTxIndex > -1) {
+        // Update the existing transaction
+        updatedExchanges[existingTxIndex] = newTx;
+      } else {
+        // Add the new transaction
+        updatedExchanges.push(newTx);
+      }
+    });
+
+    // Sort the transactions if needed
+    // updatedTransactions.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+
+    // Update the state with the new transactions
+    setTransactions(updatedExchanges);
+  };
+
+  const pollExchanges = () => {
+    const fetchAllExchanges = async () => {
+      const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
+      console.log('Polling exchanges again...');
+      if(!userDid) return
+      const allExchanges = []
+      try {
+        for (const pfi of PFIs) {
+          const exchanges = await fetchExchanges(selectedOffering.metadata.from);
+          allExchanges.push(...exchanges)
+        }
+        console.log('All exchanges:', allExchanges);
+        updateExchanges(allExchanges.reverse());
+        setTransactionsLoading(false);  
+      } catch (error) {
+        console.error('Failed to fetch exchanges:', error);
+      }
+    };
+
+    // Run the function immediately
+    fetchAllExchanges();
+
+    // Set up the interval to run the function periodically
+    setInterval(fetchAllExchanges, 5000); // Poll every 5 seconds
+  };
+
+  
+  return (
   <div>
     <h4 className="text-title-sm mb-4 font-semibold text-white">Get Quote</h4>
     <p className="text-white">Fetching quote...</p>
     <button
-      onClick={onNext}
+      onClick={getQuote}
       className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
     >
       Proceed
     </button>
   </div>
-);
+)};
 
 const OrderStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   <div>
@@ -253,17 +493,25 @@ const OrderStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   </div>
 );
 
-const OrderCompletedStep: React.FC = () => (
+const OrderCompletedStep: React.FC = () => {
+  const navigate = useNavigate();
+  const goHome = () => {
+  navigate('/dashboard');
+  }
+
+  return (
   <div>
     <h4 className="text-title-sm mb-4 font-semibold text-white">Order Completed</h4>
-    <p className="text-white">Your order has been completed successfully.</p>
+    <p className="text-white mb-2">Your order has been completed successfully.</p>
+    <button className='p-2 text-white rounded-full bg-secondary' onClick={goHome}>Go home</button>
   </div>
-);
+)};
 
 // Main Component
 const Convert: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [offerings, setOfferings] = useState<any[]>([]);
+const [selectedOffering, setSelectedOffering] = useState<any>(null);
 
   const handleNextStep = () => {
   setCurrentStep((prevStep) => prevStep + 1);
@@ -278,12 +526,17 @@ const Convert: React.FC = () => {
       setCurrentStep(step);
     }
   };
+
+  const handleSelectOffering = (offering: any) => {
+    setSelectedOffering(offering);
+  };
   
   const fetchOfferings = (payinCurrency: string, payoutCurrency: string) => {
   const filteredOfferings = filterOfferings(payinCurrency, payoutCurrency);
   setOfferings(filteredOfferings);
   if (filteredOfferings.length === 0) {
     toast.info('No offerings found for the selected currencies.', { autoClose: 1500 });
+    handlePrevStep();
   } else {
     toast.success(`${filteredOfferings.length} offerings found!`, { autoClose: 1500 });
   }
@@ -292,13 +545,13 @@ const Convert: React.FC = () => {
 return (
   <>
     <StepIndicator currentStep={currentStep} goToStep={goToStep}/>
-  <div className="flex items-center justify-center w-full">
+    <div className="flex items-center justify-center w-full">
       {currentStep === 0 && (
         <CurrencyInputStep onNext={handleNextStep} onFetchOfferings={fetchOfferings} />
       )}
-      {currentStep === 1 && <OfferingsStep offerings={offerings} onNext={handleNextStep} />}
-      {currentStep === 2 && <KycStep onNext={handleNextStep} offerings={offerings} />}
-      {currentStep === 3 && <QuoteStep onNext={handleNextStep} />}
+      {currentStep === 1 && <OfferingsStep offerings={offerings} onNext={handleNextStep} onSelectOffering={handleSelectOffering}/>}
+      {currentStep === 2 && <KycStep selectedOffering={selectedOffering} onNext={handleNextStep} />}
+      {currentStep === 3 && <QuoteStep onNext={handleNextStep} selectedOffering={selectedOffering}/>}
       {currentStep === 4 && <OrderStep onNext={handleNextStep} />}
       {currentStep === 5 && <OrderCompletedStep />}
   </div>

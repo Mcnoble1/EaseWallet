@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios'; 
-import * as XLSX from 'xlsx';
-import { toast } from 'react-toastify'; 
 import 'react-toastify/dist/ReactToastify.css'; 
-import { getFeedbacks, searchFeedbacks, deleteFeedback } from '../api/feedbackApi';
+import { getFeedbacks, deleteFeedback } from '../api/feedbackApi';
 import { formatDatetime } from '../utils/helpers';
 
 interface Complaint {
@@ -26,6 +23,8 @@ const TransactionsTable: React.FC = ({ onClick }) => {
   const [country, setCountry] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
 
   const popup = useRef<HTMLDivElement | null>(null);
 
@@ -59,7 +58,12 @@ const TransactionsTable: React.FC = ({ onClick }) => {
     setTransactionsData((prevTransactions) => prevTransactions.filter((feedback) => feedback._id !== feedbackId));
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+};
+
   return (
+    <>
     <div className="rounded-lg text-white border border-strokedark bg-tertiary px-5 pt-6 pb-2.5 shadow-default sm:px-7.5 xl:pb-1">
     <div className="flex flex-row justify-between">
       <h4 className="text-title-sm mb-4 font-semibold text-white">
@@ -73,17 +77,17 @@ const TransactionsTable: React.FC = ({ onClick }) => {
           <thead>
             <tr className="border-b border-strokedark ">
               {/* Header cells */}
-              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Workers</th>
-              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Type of Complain</th>
-              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Complaint</th>
-              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Date of Complaint</th>
+              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Date</th>
+              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Description</th>
+              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Amount</th>
+              <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Status</th>
               <th className="p-2.5 xl:p-5 text-sm font-medium text-left uppercase">Actions</th>
             </tr>
           </thead>
           <tbody>
             {/* Table body */}
             {complaintsData.map((complaint, index) => (
-              <tr key={complaint._id} className={`border-b border-strokedark  ${index === 0 ? 'rounded-t-sm' : ''}`}>
+              <tr key={complaint._id} onClick={toggleSidebar} className={`border-b border-strokedark  ${index === 0 ? 'rounded-t-sm' : ''}`}>
                 <td className="p-2.5  xl:p-5">{complaint.user?.name}</td>
                 <td className="p-2.5  xl:p-5">{complaint.title}</td>
                 <td className="p-2.5  xl:p-5">{complaint.description}</td>
@@ -130,6 +134,38 @@ const TransactionsTable: React.FC = ({ onClick }) => {
         </table>
       </div>
     </div>
+    {isSidebarOpen && (
+            <div className="fixed right-0 h-screen border-l border-lime-800 w-full lg:w-[33%] text-white z-500 bg-opacity-50">
+                <div className="bg-[#01431D] h-screen p-5 flex flex-col">
+                    <div className="flex justify-end">
+                        <button     
+                            className="border-2 border-white mb-5 rounded-lg p-3 w-20 hover:bg-white hover:text-[#01431D] transition duration-300 ease-in-out"
+                            onClick={toggleSidebar}
+                        >
+                            {/* <FontAwesomeIcon icon={faXmark} className="h-6 w-6" /> */}Close
+                        </button>
+                    </div>
+                    <div>
+                        <p className="text-2xl mb-4">Ask me anything about Climate Change, Clean Energy and Sustainability</p>
+                    </div>
+
+                    <div className="mt-4">
+                        <textarea  
+                            placeholder="What is climate change?" 
+                            className="w-full p-2 border rounded text-black outline-none"
+                        />
+                    </div>
+                    {/* Chat interface goes here */}
+                    <div className="flex flex-col h-full">
+                        <div className="flex-grow overflow-y-auto">
+                            {/* Chat messages will be displayed here */}
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            )}
+    </>
   );
 };
 

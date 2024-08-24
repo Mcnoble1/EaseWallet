@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState, ChangeEvent, FormEvent } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom'; 
 import { faDollarSign, faPiggyBank, faCreditCard, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
-import Breadcrumb from '../../components/Breadcrumb';
 import TransactionsTable from '../../components/TransactionsTable';
-import { toast } from 'react-toastify'; 
 import 'react-toastify/dist/ReactToastify.css'; 
 import '../signin.css';
 
@@ -16,28 +14,28 @@ const PFIs = [
     name: 'AquaFinance Capital',
     description: 'Provides exchanges with the Ghanaian Cedis: GHS to USDC, GHS to KES',
     icon: faDollarSign,
-    backgroundColor: '#1e3a8a' // Navy Blue
+    backgroundColor: '#1e3a8a'
   },
   {
     did: 'did:dht:zkp5gbsqgzn69b3y5dtt5nnpjtdq6sxyukpzo68npsf79bmtb9zy',
     name: 'Flowback Financial',
     description: 'Offers international rates with various currencies - USD to GBP, GBP to CAD.',
     icon: faPiggyBank,
-    backgroundColor: '#065f46' // Dark Green
+    backgroundColor: '#065f46'
   },
   {
     did: 'did:dht:enwguxo8uzqexq14xupe4o9ymxw3nzeb9uug5ijkj9rhfbf1oy5y',
     name: 'Vertex Liquid Assets',
     description: 'Offers exchange rates with the South African Rand: ZAR to BTC and EUR to ZAR.',
     icon: faCreditCard,
-    backgroundColor: '#b91c1c' // Dark Red
+    backgroundColor: '#b91c1c'
   },
   {
     did: 'did:dht:ozn5c51ruo7z63u1h748ug7rw5p1mq3853ytrd5gatu9a8mm8f1o',
     name: 'Titanium Trust',
     description: 'Offers exchange rates with the South African Rand: ZAR to BTC and EUR to ZAR.',
     icon: faChartLine,
-    backgroundColor: '#4a5568' // Dark Gray
+    backgroundColor: '#4a5568'
   }
 ];
 
