@@ -241,12 +241,73 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
 
 
 const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
+  const [formData, setFormData] = useState({
+    amount: '',
+    payoutDetails: '',
+    payinMethod: '',
+  });
+  const [quoteDetails, setQuoteDetails] = useState([{
+    id: '',
+    payinAmount: '',
+    payinCurrency: '',
+    payoutAmount: '',
+    payoutCurrency: '',
+    status: '',
+    createdTime: '',
+    expirationTime: '',
+    from: '',
+    to: '',
+    pfiDid: '',
+  }]);
+
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const [transactions, setTransactions] = useState<any[]>([]);
   const credential = localStorage.getItem('credentialJWT');
   const credentials = credential ? [credential] : [];
   const did = localStorage.getItem('userDid');
-  const createExchange = async (offering, amount, payoutPaymentDetails) => {
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const requestQuote = async () => {
+    setLoading(true);
+    // Call getQuote function here with formData details
+    const result = await createExchange(selectedOffering, formData.amount, { 
+      address: formData.payoutDetails }, formData.payinMethod);
+    const exchanges = await fetchExchanges(selectedOffering.metadata.from)
+    console.log('Exchanges:', exchanges)
+    setLoading(false);
+    setStep(2);
+  };
+
+  const handleOrder = () => {
+    // Call function to place the order
+    // addOrder(quoteDetails.id, quoteDetails.pfiDid);
+    onNext(); // Proceed to the next step
+  };
+
+  // display the date in words format like August 12, 2024
+  const formatDatetime = (datetimeString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = new Intl.DateTimeFormat('en-US', options).format(new Date(datetimeString));
+    const formattedTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(datetimeString));
+    return (`${formattedDate} ${formattedTime}`);
+  };
+
+
+  const handleClose = () => {
+    if (window.confirm('Are you sure you want to close this quote?')) {
+      // Handle close logic here
+      // addClose(quoteDetails.id, quoteDetails.pfiDid, 'Cancelled');
+      setStep(1); // Return to the initial screen
+    }
+  };  
+
+  const createExchange = async (offering, amount, payoutPaymentDetails, payinMethod) => {
     // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
     const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
     const selectedCredentials = PresentationExchange.selectCredentials({
@@ -267,7 +328,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         offeringId: selectedOffering.metadata.id,
         payin: {
           amount: amount.toString(),
-          kind: offering.data.payin.methods[0].kind,
+          kind: payinMethod,
           paymentDetails: {
             accountNumber: '1234567890123456',
             routingNumber: '12345',
@@ -303,9 +364,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     }
   }
 
-  createExchange(selectedOffering, 100, {
-    address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-  });
+  // createExchange(selectedOffering, 100, {
+  //   address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+  // });
 
   const generateExchangeStatusValues = (exchangeMessage) => {
     if (exchangeMessage instanceof Close) {
@@ -333,6 +394,19 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         const fee = quoteMessage?.data['payin']?.['fee']
         const payinAmount = quoteMessage?.data['payin']?.['amount']
         const payoutPaymentDetails = rfqMessage.privateData?.payout.paymentDetails
+        setQuoteDetails({ 
+          id: latestMessage.metadata.exchangeId,
+          payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
+          payinCurrency: quoteMessage.data['payin']?.['currencyCode'] ?? null,
+          payoutAmount: quoteMessage?.data['payout']?.['amount'] ?? null,
+          payoutCurrency: quoteMessage.data['payout']?.['currencyCode'],
+          status,
+          createdTime: rfqMessage.createdAt,
+          ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
+          from: 'You',
+          to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
+          pfiDid: rfqMessage.metadata.to
+        })
         return {
           id: latestMessage.metadata.exchangeId,
           payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
@@ -469,14 +543,89 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   
   return (
   <div>
-    <h4 className="text-title-sm mb-4 font-semibold text-white">Get Quote</h4>
-    <p className="text-white">Fetching quote...</p>
-    <button
-      onClick={getQuote}
-      className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
-    >
-      Proceed
-    </button>
+    <div className="p-4 md:p-8 max-w-lg mx-auto">
+      {step === 1 && (
+        <div className="space-y-4">
+              <h4 className="text-title-sm mt-4 font-semibold text-center text-white">Get Quote</h4>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Amount to Convert</label>
+            <input
+              type="text"
+              name="amount"
+              value={formData.amount}
+              onChange={handleInputChange}
+              required
+              className="w-full p-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Select Payin Method</label>
+            <select
+              name="payinMethod"
+              value={formData.payinMethod}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            >
+              <option value="">Select method</option>
+              {selectedOffering?.data?.payin?.methods.map((method, index) => (
+                <option key={index} value={method.kind}>
+                  {method.kind}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Payout Details</label>
+            <input
+              type="text"
+              name="payoutDetails"
+              value={formData.payoutDetails}
+              onChange={handleInputChange}
+              required
+              className="w-full p-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          <button
+            onClick={requestQuote}
+            disabled={loading}
+            className="w-full py-2 px-4 bg-secondary text-white font-semibold rounded-md hover:bg-blue-600 disabled:bg-blue-400"
+          >
+            {loading ? 'Loading...' : 'Request Quote'}
+          </button>
+        </div>
+      )}
+
+      {step === 2 && quoteDetails && (
+        <div className="space-y-4">
+          <h4 className="text-xl font-semibold text-white text-center mb-4">Quote Details</h4>
+          <div className="space-y-2">
+            <p className="text-lg font-semibold">Payin Amount: <span className="font-medium text-white">{quoteDetails.payinAmount}</span></p>
+            <p className="text-lg font-semibold">Payout Amount: <span className="font-medium text-white">{quoteDetails.payoutAmount}</span></p>
+            <p className="text-lg font-semibold">Payout Currency: <span className="font-medium text-white">{quoteDetails.payoutCurrency}</span></p>
+            <p className="text-lg font-semibold">Status: <span className={`${(quoteDetails.status) === "completed" ? 'bg-green' : 'bg-secondary' } px-2 pb-1 rounded-2xl font-medium text-white`}>{quoteDetails.status}</span></p>
+            <p className="text-lg font-semibold">Created Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.createdTime)}</span></p>
+            <p className="text-lg font-semibold">Expiration Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.expirationTime)}</span></p>
+            <p className="text-lg font-semibold">From: <span className="font-medium text-white">{quoteDetails.from}</span></p>
+            <p className="text-lg font-semibold">To: <span className="font-medium text-white">{quoteDetails.to}</span></p>
+
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={handleOrder}
+              className="flex-1 py-2 px-4 bg-green text-white font-semibold rounded-md hover:bg-green-600"
+            >
+              Order
+            </button>
+            <button
+              onClick={handleClose}
+              className="flex-1 py-2 px-4 bg-danger text-white font-semibold rounded-md hover:bg-red-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   </div>
 )};
 
