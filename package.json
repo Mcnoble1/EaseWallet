@@ -20,6 +20,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@tbdex/http-server": "^1.1.0",
     "@web5/credentials": "^1.1.0",
     "@web5/dids": "^1.1.1",
