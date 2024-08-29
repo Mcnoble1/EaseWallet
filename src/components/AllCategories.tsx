@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filterOfferings, PFIs } from '../utils/helpers';
@@ -6,7 +6,6 @@ import { DidDht } from '@web5/dids'
 import { VerifiableCredential, PresentationExchange } from "@web5/credentials";
 import { useNavigate } from 'react-router-dom';
 import { Close, Order, Rfq, TbdexHttpClient } from '@tbdex/http-client'
-
 
 const steps = [
   'Currency Input',
@@ -239,8 +238,8 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
   );
 };
 
-
 const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     amount: '',
     payoutDetails: '',
@@ -253,12 +252,17 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     payoutAmount: '',
     payoutCurrency: '',
     status: '',
+    exchangeId: '',
     createdTime: '',
     expirationTime: '',
     from: '',
     to: '',
     pfiDid: '',
   }]);
+  const [reason, setReason] = useState('');
+  const [popupOpen, setPopupOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  const popup = useRef<HTMLDivElement | null>(null); 
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
@@ -285,8 +289,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   };
 
   const handleOrder = () => {
-    // Call function to place the order
-    // addOrder(quoteDetails.id, quoteDetails.pfiDid);
+    addOrder(quoteDetails.exchangeId, quoteDetails.pfiDid);
+    toast.success('Order placed successfully');
     onNext(); // Proceed to the next step
   };
 
@@ -300,11 +304,10 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
 
   const handleClose = () => {
-    if (window.confirm('Are you sure you want to close this quote?')) {
-      // Handle close logic here
-      // addClose(quoteDetails.id, quoteDetails.pfiDid, 'Cancelled');
-      setStep(1); // Return to the initial screen
-    }
+      addClose(quoteDetails.exchangeId, quoteDetails.pfiDid, reason);
+      setPopupOpen(false);
+      toast.success('Exchange closed successfully');
+      window.location.reload();
   };  
 
   const createExchange = async (offering, amount, payoutPaymentDetails, payinMethod) => {
@@ -389,7 +392,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         const latestMessage = exchange[exchange.length - 1]
         const rfqMessage = exchange.find(message => message.kind === 'rfq')
         const quoteMessage = exchange.find(message => message.kind === 'quote')
-        // console.log('quote', quoteMessage)
+        console.log('Quote Message:', quoteMessage);
         const status = generateExchangeStatusValues(latestMessage)
         const fee = quoteMessage?.data['payin']?.['fee']
         const payinAmount = quoteMessage?.data['payin']?.['amount']
@@ -401,6 +404,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
           payoutAmount: quoteMessage?.data['payout']?.['amount'] ?? null,
           payoutCurrency: quoteMessage.data['payout']?.['currencyCode'],
           status,
+          exchangeId: latestMessage.metadata.exchangeId,
           createdTime: rfqMessage.createdAt,
           ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
           from: 'You',
@@ -465,7 +469,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     await close.sign(userDid)
     try {
       // send Close message
-      await TbdexHttpClient.submitClose(close)
+      const response = await TbdexHttpClient.submitClose(close);
+      console.log(response);
     }
     catch (error) {
       console.error('Failed to close exchange:', error);
@@ -486,7 +491,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     await order.sign(userDid)
     try {
       // Send order message
-      return await TbdexHttpClient.submitOrder(order)
+      const response = await TbdexHttpClient.submitOrder(order);
+      console.log(response);
+      return response;
     } catch (error) {
       console.error('Failed to submit order:', error);
     }
@@ -537,8 +544,12 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     fetchAllExchanges();
 
     // Set up the interval to run the function periodically
-    setInterval(fetchAllExchanges, 5000); // Poll every 5 seconds
+    setInterval(fetchAllExchanges, 3000); // Poll every 5 seconds
   };
+
+  useEffect(() => {
+    pollExchanges();
+  }, []);
 
   
   return (
@@ -617,12 +628,74 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
               Order
             </button>
             <button
-              onClick={handleClose}
+              ref={trigger}
+              onClick={() => setPopupOpen(!popupOpen)}
               className="flex-1 py-2 px-4 bg-danger text-white font-semibold rounded-md hover:bg-red-600"
             >
               Cancel
             </button>
           </div>
+          {popupOpen && (
+              <div
+                ref={popup}
+                className="fixed inset-0 flex items-center text-white justify-center z-50 bg-primary bg-opacity-70"
+              >
+                <div
+                  className="bg-tertiary lg:w-1/2 rounded-lg pt-2 px-6 shadow-md"
+                  style={{ maxHeight: 'calc(100vh - 180px)' }}
+                >
+                  <div className="flex flex-row justify-between">
+                    <h2 className="text-xl px-6.5 pt-6.5 font-semibold mb-4">Cancel Exchange</h2>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => setPopupOpen(false)} 
+                        className="text-blue-500 hover:text-gray-700 focus:outline-none"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 fill-current bg-white rounded-full p-1 hover:bg-opacity-90"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="black"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <form>
+                    <div className="flex flex-col gap-5.5">
+                        <div>
+                            <label className="mb-2.5 block text-white">Reason</label>
+                            <input
+                                name="reason"
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                required
+                                className="w-full rounded-lg border-[1.5px] border-stroke bg-tertiary py-3 px-5 font-medium outline-none"
+                            >
+                            </input>
+                        </div>
+                    </div> 
+                  </form>
+                    <button
+                      type="button"
+                      onClick={handleClose}
+                      disabled={loading}
+                      className={`mr-5 mt-5 mb-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-danger py-4 px-10 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {loading ? (
+                        <div className="flex items-center">
+                          <div className="spinner"></div>
+                          <span className="pl-1">Closing Exchange</span>
+                        </div>
+                      ) : (
+                        <>Cancel</>
+                      )}
+                    </button>
+                </div>
+              </div>
+            )}
         </div>
       )}
     </div>
