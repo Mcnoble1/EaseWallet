@@ -255,6 +255,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     exchangeId: '',
     createdTime: '',
     expirationTime: '',
+    // settlementTime: '',
     from: '',
     to: '',
     pfiDid: '',
@@ -299,7 +300,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = new Intl.DateTimeFormat('en-US', options).format(new Date(datetimeString));
     const formattedTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(datetimeString));
-    return (`${formattedDate} ${formattedTime}`);
+    return (`${formattedDate} at ${formattedTime}`);
   };
 
 
@@ -361,6 +362,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     try {
       // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
       await TbdexHttpClient.createExchange(rfq)
+      console.log("creating exchange");
     }
     catch (error) {
       console.error('Failed to create exchange:', error);
@@ -388,6 +390,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
 
   const formatMessages = (exchanges) => {
+    console.log(exchanges);
     const formattedMessages = exchanges.map(exchange => {
         const latestMessage = exchange[exchange.length - 1]
         const rfqMessage = exchange.find(message => message.kind === 'rfq')
@@ -439,6 +442,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       });
 
       const mappedExchanges = formatMessages(exchanges)
+      console.log("mapped exchanges", mappedExchanges)
       return mappedExchanges
     } catch (error) {
       console.error('Failed to fetch exchanges:', error);
@@ -547,9 +551,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     setInterval(fetchAllExchanges, 3000); // Poll every 5 seconds
   };
 
-  useEffect(() => {
-    pollExchanges();
-  }, []);
+  // useEffect(() => {
+  //   pollExchanges();
+  // }, []);
 
   
   return (
@@ -610,14 +614,12 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         <div className="space-y-4">
           <h4 className="text-xl font-semibold text-white text-center mb-4">Quote Details</h4>
           <div className="space-y-2">
-            <p className="text-lg font-semibold">Payin Amount: <span className="font-medium text-white">{quoteDetails.payinAmount}</span></p>
-            <p className="text-lg font-semibold">Payout Amount: <span className="font-medium text-white">{quoteDetails.payoutAmount}</span></p>
-            <p className="text-lg font-semibold">Payout Currency: <span className="font-medium text-white">{quoteDetails.payoutCurrency}</span></p>
+            <p className="text-lg font-semibold">Payin Amount: <span className="font-medium text-white">{quoteDetails.payinAmount} {quoteDetails.payinCurrency}</span></p>
+            <p className="text-lg font-semibold">Payout Amount: <span className="font-medium text-white">{quoteDetails.payoutAmount} {quoteDetails.payoutCurrency}</span></p>
             <p className="text-lg font-semibold">Status: <span className={`${(quoteDetails.status) === "completed" ? 'bg-green' : 'bg-secondary' } px-2 pb-1 rounded-2xl font-medium text-white`}>{quoteDetails.status}</span></p>
-            <p className="text-lg font-semibold">Created Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.createdTime)}</span></p>
+            <p className="text-lg font-semibold">Creation Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.createdTime)}</span></p>
             <p className="text-lg font-semibold">Expiration Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.expirationTime)}</span></p>
-            <p className="text-lg font-semibold">From: <span className="font-medium text-white">{quoteDetails.from}</span></p>
-            <p className="text-lg font-semibold">To: <span className="font-medium text-white">{quoteDetails.to}</span></p>
+            <p className="text-lg font-semibold">Recipient: <span className="font-medium text-white">{quoteDetails.to}</span></p>
 
           </div>
           <div className="flex gap-4">
