@@ -4,8 +4,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { filterOfferings, PFIs } from '../utils/helpers';
 import { DidDht } from '@web5/dids'
 import { VerifiableCredential, PresentationExchange } from "@web5/credentials";
+import { formatDatetime } from '../utils/helpers';
 import { useNavigate } from 'react-router-dom';
 import { Close, Order, Rfq, TbdexHttpClient } from '@tbdex/http-client'
+import { useTransactionContext } from './TransactionContext';
 
 const steps = [
   'Currency Input',
@@ -153,6 +155,19 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
     onNext();
   };
 
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+  
+    const hoursStr = hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''}` : '';
+    const minutesStr = minutes > 0 ? `${minutes} minute${minutes > 1 ? 's' : ''}` : '';
+    const secondsStr = remainingSeconds > 0 ? `${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}` : '';
+  
+    // Combine hours, minutes, and seconds into a readable format
+    return [hoursStr, minutesStr, secondsStr].filter(Boolean).join(', ');
+  }
+  
   return (
     <div className='w-[80%]'>
       <h4 className="text-title-sm mb-4 font-semibold text-white">Offerings</h4>
@@ -177,6 +192,9 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
             <p>
               <strong>Conversion Rate:</strong> 1 {offering.data.payin.currencyCode} ={' '}
               {offering.data.payoutUnitsPerPayinUnit} {offering.data.payout.currencyCode}
+            </p>
+            <p>
+              <strong>Settlement Time:</strong> {formatTime(offering.data.payout.methods[0].estimatedSettlementTime)}
             </p>
           </div>
         ))}
@@ -240,6 +258,7 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
 
 const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
   const navigate = useNavigate();
+  const { transactions, setTransactions } = useTransactionContext();
   const [formData, setFormData] = useState({
     amount: '',
     payoutDetails: '',
@@ -247,6 +266,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   });
   const [quoteDetails, setQuoteDetails] = useState([{
     id: '',
+    message: [],
     payinAmount: '',
     payinCurrency: '',
     payoutAmount: '',
@@ -255,7 +275,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     exchangeId: '',
     createdTime: '',
     expirationTime: '',
-    // settlementTime: '',
     from: '',
     to: '',
     pfiDid: '',
@@ -267,8 +286,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const [transactionsLoading, setTransactionsLoading] = useState(true);
-  const [transactions, setTransactions] = useState<any[]>([]);
   const credential = localStorage.getItem('credentialJWT');
   const credentials = credential ? [credential] : [];
   const did = localStorage.getItem('userDid');
@@ -284,9 +301,10 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     const result = await createExchange(selectedOffering, formData.amount, { 
       address: formData.payoutDetails }, formData.payinMethod);
     const exchanges = await fetchExchanges(selectedOffering.metadata.from)
-    console.log('Exchanges:', exchanges)
+    // console.log('Final Exchanges:', exchanges)
     setLoading(false);
     setStep(2);
+    pollExchanges();
   };
 
   const handleOrder = () => {
@@ -318,8 +336,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       vcJwts: credentials,
       presentationDefinition: offering.data.requiredClaims,
     })
-
-    console.log(selectedOffering)
 
     // TODO 4: Create RFQ message to Request for a Quote
     const rfq = Rfq.create({
@@ -357,7 +373,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     // TODO 6: Sign RFQ message
     await rfq.sign(userDid)
 
-    console.log('RFQ:', rfq)
+    // console.log('RFQ:', rfq)
 
     try {
       // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
@@ -390,17 +406,17 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
 
   const formatMessages = (exchanges) => {
-    console.log(exchanges);
     const formattedMessages = exchanges.map(exchange => {
         const latestMessage = exchange[exchange.length - 1]
         const rfqMessage = exchange.find(message => message.kind === 'rfq')
         const quoteMessage = exchange.find(message => message.kind === 'quote')
-        console.log('Quote Message:', quoteMessage);
+        // console.log('Quote Message:', quoteMessage);
         const status = generateExchangeStatusValues(latestMessage)
         const fee = quoteMessage?.data['payin']?.['fee']
         const payinAmount = quoteMessage?.data['payin']?.['amount']
         const payoutPaymentDetails = rfqMessage.privateData?.payout.paymentDetails
-        setQuoteDetails({ 
+        setQuoteDetails({
+          message: latestMessage,
           id: latestMessage.metadata.exchangeId,
           payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
           payinCurrency: quoteMessage.data['payin']?.['currencyCode'] ?? null,
@@ -440,19 +456,11 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         pfiDid: pfiUri,
         did: userDid
       });
-
       const mappedExchanges = formatMessages(exchanges)
-      console.log("mapped exchanges", mappedExchanges)
       return mappedExchanges
     } catch (error) {
       console.error('Failed to fetch exchanges:', error);
     }
-  }
-
-  const getQuote = async () => {
-    const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
-    const exchanges = await fetchExchanges(selectedOffering.metadata.from)
-    console.log('Exchanges:', exchanges)
   }
 
   const addClose = async (exchangeId, pfiUri, reason) => {
@@ -520,25 +528,23 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
     // Sort the transactions if needed
     // updatedTransactions.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
-
+    // console.log('Updated Exchanges:', updatedExchanges);
     // Update the state with the new transactions
     setTransactions(updatedExchanges);
+    localStorage.setItem('transactions', JSON.stringify(updatedExchanges));
   };
 
   const pollExchanges = () => {
     const fetchAllExchanges = async () => {
-      const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
-      console.log('Polling exchanges again...');
-      if(!userDid) return
-      const allExchanges = []
+      console.log('Polling exchanges');
+      // const allExchanges = []
       try {
-        for (const pfi of PFIs) {
           const exchanges = await fetchExchanges(selectedOffering.metadata.from);
-          allExchanges.push(...exchanges)
-        }
-        console.log('All exchanges:', allExchanges);
-        updateExchanges(allExchanges.reverse());
-        setTransactionsLoading(false);  
+          // allExchanges.push(...exchanges)
+        setTransactions(exchanges);
+        // localStorage.setItem('transactions', JSON.stringify(exchanges));
+        // console.log('Exchanges from Polling:', exchanges);
+        updateExchanges(exchanges.reverse());
       } catch (error) {
         console.error('Failed to fetch exchanges:', error);
       }
@@ -548,13 +554,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     fetchAllExchanges();
 
     // Set up the interval to run the function periodically
-    setInterval(fetchAllExchanges, 3000); // Poll every 5 seconds
+    setInterval(fetchAllExchanges, 5000); // Poll every 5 seconds
   };
-
-  // useEffect(() => {
-  //   pollExchanges();
-  // }, []);
-
   
   return (
   <div>
@@ -762,7 +763,7 @@ const [selectedOffering, setSelectedOffering] = useState<any>(null);
     toast.info('No offerings found for the selected currencies.', { autoClose: 1500 });
     handlePrevStep();
   } else {
-    toast.success(`${filteredOfferings.length} offerings found!`, { autoClose: 1500 });
+    toast.success(`${filteredOfferings.length === 1 ? `${filteredOfferings.length} offering found!` : `${filteredOfferings.length} offerings found!`}`, { autoClose: 1500 });
   }
 };
 
