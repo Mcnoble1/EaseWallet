@@ -3,8 +3,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filterOfferings, PFIs } from '../utils/helpers';
 import { DidDht } from '@web5/dids'
-import { VerifiableCredential, PresentationExchange } from "@web5/credentials";
-import { formatDatetime } from '../utils/helpers';
+import { PresentationExchange } from "@web5/credentials";
 import { useNavigate } from 'react-router-dom';
 import { Close, Order, Rfq, TbdexHttpClient } from '@tbdex/http-client'
 import { useTransactionContext } from './TransactionContext';
@@ -22,7 +21,7 @@ const steps = [
 // Step Indicator Component
 const StepIndicator: React.FC<{ currentStep: number; goToStep: (step: number) => void }> = ({ currentStep, goToStep }) => {
   return (
-    <div className="flex items-center mx-40 mb-4">
+    <div className="flex items-center lg:mx-40 mb-5">
       {steps.map((step, index) => (
         <React.Fragment key={index}>
           <div
@@ -93,7 +92,7 @@ const CurrencyInputStep: React.FC<{ onNext: () => void; onFetchOfferings: any }>
   };
 
   return (
-    <div className='w-[60%]'>
+    <div className='w-[90%] lg:w-[60%]'>
       <h4 className="text-title-sm mb-4 font-semibold text-white">Swap Currency</h4>
       <div className="bg-tertiary w-full rounded-lg p-4 shadow-md">
         <form>
@@ -105,7 +104,7 @@ const CurrencyInputStep: React.FC<{ onNext: () => void; onFetchOfferings: any }>
                 value={formData.payinCurrency}
                 onChange={handleInputChange}
                 required
-                className="w-full rounded-lg border-[1.5px] border-stroke bg-tertiary py-3 px-5 font-medium outline-none"
+                className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
               >
                 <option value="">Select currency</option>
                 {payinCurrencyCodes.map((code) => (
@@ -123,7 +122,7 @@ const CurrencyInputStep: React.FC<{ onNext: () => void; onFetchOfferings: any }>
                 value={formData.payoutCurrency}
                 onChange={handleInputChange}
                 required
-                className="w-full rounded-lg border-[1.5px] border-stroke bg-tertiary py-3 px-5 font-medium outline-none"
+                className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
               >
                 <option value="">Select currency</option>
                 {payoutCurrencyCodes.map((code) => (
@@ -169,33 +168,40 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
   }
   
   return (
-    <div className='w-[80%]'>
+    <div className='w-[90%]'>
       <h4 className="text-title-sm mb-4 font-semibold text-white">Offerings</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {offerings?.map((offering, index) => (
-          <div key={index} onClick={() => handleOfferingClick(offering)} className="bg-tertiary text-white rounded-lg shadow-md p-6 cursor-pointer hover:bg-opacity-80">
-            <h5 className="text-lg font-semibold mb-2">
-              {PFIs.find((pfi) => pfi.did === offering.metadata.from)?.name}
-            </h5>
-            <p className="text-md mb-2">{offering.data.description}</p>
-            <p>
-              <strong>Payin Methods:</strong>{' '}
-              {offering.data.payin.methods.map((method: any, methodIndex: number) => (
-                <span
-                  key={methodIndex}
-                  className="inline-block bg-gray-200 rounded px-2 py-1 text-xs font-semibold text-gray-700 mr-2"
-                >
-                  {method.kind}
-                </span>
-              ))}
-            </p>
-            <p>
-              <strong>Conversion Rate:</strong> 1 {offering.data.payin.currencyCode} ={' '}
-              {offering.data.payoutUnitsPerPayinUnit} {offering.data.payout.currencyCode}
-            </p>
-            <p>
-              <strong>Settlement Time:</strong> {formatTime(offering.data.payout.methods[0].estimatedSettlementTime)}
-            </p>
+          <div key={index} onClick={() => handleOfferingClick(offering)} className="bg-tertiary text-white rounded-lg shadow-md p-3 cursor-pointer hover:bg-opacity-100">
+            <div className='flex justify-between'>
+              <h5 className="text-md font-semibold mb-2">
+                {PFIs.find((pfi) => pfi.did === offering.metadata.from)?.name}
+              </h5>
+              <p className="text-sm mb-2">{offering.data.payin.currencyCode} to {offering.data.payout.currencyCode}</p>
+            </div>
+
+            <div className='flex text-sm justify-between'>
+              <p>Payin Methods</p>
+              <p>{offering.data.payin.methods.map((method: any, methodIndex: number) => (
+                  <span
+                    key={methodIndex}
+                    className="inline-block text-sm"
+                  >
+                    {method.kind}
+                  </span>
+                ))}
+                </p>
+            </div>
+
+            <div className='flex text-sm justify-between'>
+              <p>Rate</p>
+              <p>1 {offering.data.payin.currencyCode} /{' '}{offering.data.payoutUnitsPerPayinUnit} {offering.data.payout.currencyCode}</p>
+            </div>
+
+            <div className='flex text-sm justify-between'>
+              <p>Settlement Time</p>
+              <p>{formatTime(offering.data.payout.methods[0].estimatedSettlementTime)}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -225,33 +231,33 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
   };
 
   const kyc = () => {
-    useEffect(() => {
     const credentials = credential ? [credential] : [];
     const satisfiesRequirements = satisfiesOfferingRequirements(selectedOffering, credentials);
 
     if (satisfiesRequirements) {
       toast.success("KYC successful! Proceed to request for a Quote");
+      onNext();
     } else {
       toast.error("KYC failed! Complete Verification to proceed");
       navigate('/profile');
     }
-  }, []);
   };
 
-  // useEffect(() => {
-    kyc(); 
-  // }, []); 
+  useEffect(() => {
+    kyc();
+  }, []);
+
 
   return (
     <div>
       <h4 className="text-title-sm mb-4 font-semibold text-white">KYC Check</h4>
       <p className="text-white">Performing KYC...</p>
-      <button
+      {/* <button
       onClick={onNext}
       className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
     >
       Proceed
-    </button>
+    </button> */}
     </div>
   );
 };

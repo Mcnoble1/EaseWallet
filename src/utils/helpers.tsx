@@ -130,3 +130,5 @@ export const renderCredential = (credentialJwt) => {
     issuanceDate: new Date(vc.issuanceDate).toLocaleDateString(undefined, {dateStyle: 'medium'}),
   }
 }
+
+

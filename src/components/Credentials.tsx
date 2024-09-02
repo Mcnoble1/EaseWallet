@@ -58,7 +58,7 @@ const Credentials = ({userDID}: any) => {
   };
 
   const handleGetCredential = () => {
-    axios.get('http://localhost:3000/api/mock-idv.tbddev.org/kcc', {
+    axios.get('https://mock-idv.tbddev.org/kcc', {
         params: {
           name: formData.name,
           country: formData.countryCode,

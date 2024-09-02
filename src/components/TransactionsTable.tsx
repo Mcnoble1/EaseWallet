@@ -30,7 +30,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
   
   const toggleSidebar = (transactionId: string) => {
     const selectedTransaction = transactions.find(transaction => transaction.id === transactionId);
-    console.log('Selected Transaction:', selectedTransaction);
+    // console.log('Selected Transaction:', selectedTransaction);
     setSelectedTransaction([selectedTransaction]);
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -47,8 +47,8 @@ const TransactionsTable: React.FC = ({ onClick }) => {
         return 'failed'
       }
     }
-    console.log('Exchange Message:', exchangeMessage);
-    console.log('Exchange Message Kind:', exchangeMessage.kind);
+    // console.log('Exchange Message:', exchangeMessage);
+    // console.log('Exchange Message Kind:', exchangeMessage.kind);
     return exchangeMessage.kind
   }
 
