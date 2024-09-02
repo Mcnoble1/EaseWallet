@@ -85,21 +85,21 @@ const SignIn = () => {
 
   return (
     <>
-    <div className="h-screen w-screen text-white bg-[#16161A] px-20">
+    <div className="h-screen w-full text-white bg-[#16161A] px-10 lg:px-20 flex justify-center items-center">
       <div className="flex flex-wrap items-center">
         <div className="w-full xl:w-3/5"> 
           <div className="">
-          <Link className="mb-5 inline-block" to="/">
-              {/* <img className="hidden dark:block" src={Logo} width={50} height={50} alt="Logo" />
-              <img className="dark:hidden" src={Logo} width={50} height={50} alt="Logo" /> */}
-            </Link>
+          {/* <Link className="mb-5 inline-block" to="/">
+              <img className="hidden dark:block" src={Logo} width={50} height={50} alt="Logo" />
+              <img className="dark:hidden" src={Logo} width={50} height={50} alt="Logo" />
+            </Link> */}
             <h2 className="mb-1 text-2xl font-bold text-white dark:text-white sm:text-title-xl2">
               Welcome Back
             </h2>
             <span className="mb-5 block text-white font-medium">Enter your Email and Password to sign in</span>
 
 
-            <form onSubmit={handleSignIn} className='w-[90%] lg:w-[80%]'>
+            <form onSubmit={handleSignIn} className='w-[100%] lg:w-[80%]'>
               <div className="mb-4 ">
                 <label className="mb-2.5 block font-medium text-white dark:text-white">
                   Username / Email address

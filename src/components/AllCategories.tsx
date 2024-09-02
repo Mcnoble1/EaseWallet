@@ -236,7 +236,7 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
 
     if (satisfiesRequirements) {
       toast.success("KYC successful! Proceed to request for a Quote");
-      onNext();
+      // onNext();
     } else {
       toast.error("KYC failed! Complete Verification to proceed");
       navigate('/profile');
@@ -252,12 +252,12 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
     <div>
       <h4 className="text-title-sm mb-4 font-semibold text-white">KYC Check</h4>
       <p className="text-white">Performing KYC...</p>
-      {/* <button
+      <button
       onClick={onNext}
       className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
     >
       Proceed
-    </button> */}
+    </button>
     </div>
   );
 };
@@ -267,8 +267,10 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const { transactions, setTransactions } = useTransactionContext();
   const [formData, setFormData] = useState({
     amount: '',
-    payoutDetails: '',
+    payoutDetails: {},
     payinMethod: '',
+    payoutMethod: '',
+    payinDetails: {},
   });
   const [quoteDetails, setQuoteDetails] = useState([{
     id: '',
@@ -295,17 +297,72 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const credential = localStorage.getItem('credentialJWT');
   const credentials = credential ? [credential] : [];
   const did = localStorage.getItem('userDid');
+  const [payinMethodDetails, setPayinMethodDetails] = useState(null);
+  const [payoutDetails, setPayoutDetails] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    
+    // Check if the name corresponds to a nested object field
+    if (formData.payinDetails && name in formData.payinDetails) {
+      setFormData((prevData) => ({
+        ...prevData,
+        payinDetails: { ...prevData.payinDetails, [name]: value },
+      }));
+    } else if (formData.payoutDetails && name in formData.payoutDetails) {
+      setFormData((prevData) => ({
+        ...prevData,
+        payoutDetails: { ...prevData.payoutDetails, [name]: value },
+      }));
+    } else {
+      setFormData((prevData) => ({ ...prevData, [name]: value }));
+    }
+  };
+
+  const handlePayinMethodChange = (event) => {
+    const selectedMethod = event.target.value;
+    const methodDetails = selectedOffering?.data?.payin?.methods.find(
+      (method) => method.kind === selectedMethod
+    );
+    setPayinMethodDetails(methodDetails);
+    
+    // Initialize empty fields for payinDetails
+    const initialPayinDetails = Object.keys(methodDetails?.requiredPaymentDetails?.properties || {}).reduce(
+      (details, key) => ({ ...details, [key]: '' }),
+      {}
+    );
+
+    setFormData((prevData) => ({
+      ...prevData,
+      payinMethod: selectedMethod,
+      payinDetails: initialPayinDetails, // Initialize payinDetails with empty fields
+    }));
+  };
+
+  const handlePayoutDetailsChange = (event) => {
+    const selectedMethod = event.target.value;
+    const methodDetails = selectedOffering?.data?.payout?.methods.find(
+      (method) => method.kind === selectedMethod
+    );
+    setPayoutDetails(methodDetails);
+    
+    // Initialize empty fields for payoutDetails
+    const initialPayoutDetails = Object.keys(methodDetails?.requiredPaymentDetails?.properties || {}).reduce(
+      (details, key) => ({ ...details, [key]: '' }),
+      {}
+    );
+
+    setFormData((prevData) => ({
+      ...prevData,
+      payoutMethod: selectedMethod,
+      payoutDetails: initialPayoutDetails, // Initialize payoutDetails with empty fields
+    }));
   };
 
   const requestQuote = async () => {
     setLoading(true);
     // Call getQuote function here with formData details
-    const result = await createExchange(selectedOffering, formData.amount, { 
-      address: formData.payoutDetails }, formData.payinMethod);
+    const result = await createExchange(selectedOffering, formData.amount, formData.payinMethod, formData.payinDetails, formData.payoutMethod, formData.payoutDetails,);
     const exchanges = await fetchExchanges(selectedOffering.metadata.from)
     // console.log('Final Exchanges:', exchanges)
     setLoading(false);
@@ -335,7 +392,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       window.location.reload();
   };  
 
-  const createExchange = async (offering, amount, payoutPaymentDetails, payinMethod) => {
+  const createExchange = async (offering, amount, payinMethod, payinPaymentDetails, payoutMethod, payoutPaymentDetails) => {
     // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
     const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
     const selectedCredentials = PresentationExchange.selectCredentials({
@@ -351,17 +408,14 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         protocol: '1.0'
       },
       data: {
-        offeringId: selectedOffering.metadata.id,
+        offeringId: offering.metadata.id,
         payin: {
           amount: amount.toString(),
           kind: payinMethod,
-          paymentDetails: {
-            accountNumber: '1234567890123456',
-            routingNumber: '12345',
-          }
+          paymentDetails: payinPaymentDetails
         },
         payout: {
-          kind: offering.data.payout.methods[0].kind,
+          kind: payoutMethod,
           paymentDetails: payoutPaymentDetails
         },
         claims: selectedCredentials
@@ -564,57 +618,107 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   };
   
   return (
-  <div>
+    <div className='w-[90%] lg:w-[60%]'>
     <div className="p-4 md:p-8 max-w-lg mx-auto">
       {step === 1 && (
-        <div className="space-y-4">
-              <h4 className="text-title-sm mt-4 font-semibold text-center text-white">Get Quote</h4>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">Amount to Convert</label>
-            <input
-              type="text"
-              name="amount"
-              value={formData.amount}
-              onChange={handleInputChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md"
-            />
+        <div className="bg-tertiary w-full rounded-lg p-4 shadow-md">
+          <h4 className="text-title-sm font-semibold text-center text-white">Get Quote</h4>
+        <form>
+        <div className="flex flex-col gap-5.5">
+            <div>
+              <label className="mb-2.5 block text-white">Amount</label>
+              <input
+                type='text'
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                placeholder='1000'
+                required
+                className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2.5 block text-white">Payin Method</label>
+              <select
+                name="payinMethod"
+                value={formData.payinMethod}
+                onChange={handlePayinMethodChange}
+                required
+                className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+              >
+                <option value="">Select method</option>
+                {selectedOffering?.data?.payin?.methods.map((method, index) => (
+                  <option key={index} value={method.kind}>
+                    {method.kind}
+                  </option>
+                ))}
+              </select>
+              {payinMethodDetails && (
+                <div className="mt-3">
+                  {Object.keys(payinMethodDetails.requiredPaymentDetails.properties).map((key, index) => (
+                    <div key={index} className="mt-2">
+                      <label className="mb-2.5 block text-white">{payinMethodDetails.requiredPaymentDetails.properties[key].title}</label>
+                      <input
+                        type="text"
+                        name={key}
+                        value={formData.payinDetails[key] || ''}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2.5 block text-white">Payout Method</label>
+              <select
+                name="payoutMethod"
+                value={formData.payoutMethod}
+                onChange={handlePayoutDetailsChange}
+                required
+                className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+              >
+                <option value="">Select method</option>
+                {selectedOffering?.data?.payout?.methods.map((method, index) => (
+                  <option key={index} value={method.kind}>
+                    {method.kind}
+                  </option>
+                ))}
+              </select>
+              {payoutDetails && (
+                <div className="mt-3">
+                  {Object.keys(payoutDetails.requiredPaymentDetails.properties).map((key, index) => (
+                    <div key={index} className="mt-2">
+                      <label className="mb-2.5 block text-white">{payoutDetails.requiredPaymentDetails.properties[key].title}</label>
+                      <input
+                        type="text"
+                        name={key}
+                        value={formData.payoutDetails[key] || ''}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">Select Payin Method</label>
-            <select
-              name="payinMethod"
-              value={formData.payinMethod}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md"
-            >
-              <option value="">Select method</option>
-              {selectedOffering?.data?.payin?.methods.map((method, index) => (
-                <option key={index} value={method.kind}>
-                  {method.kind}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">Payout Details</label>
-            <input
-              type="text"
-              name="payoutDetails"
-              value={formData.payoutDetails}
-              onChange={handleInputChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md"
-            />
-          </div>
+
           <button
+            type="button"
             onClick={requestQuote}
             disabled={loading}
-            className="w-full py-2 px-4 bg-secondary text-white font-semibold rounded-md hover:bg-blue-600 disabled:bg-blue-400"
+            className="mr-5 mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
           >
-            {loading ? 'Loading...' : 'Request Quote'}
+            {loading ? <span>Requesting...</span> : 'Request Quote'}
           </button>
-        </div>
+        </form>
+      </div>
       )}
 
       {step === 2 && quoteDetails && (
@@ -791,5 +895,16 @@ return (
 };
 
 export default Convert;
+
+
+
+
+
+
+
+
+
+
+
 
 
