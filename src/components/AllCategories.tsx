@@ -300,62 +300,60 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const [payinMethodDetails, setPayinMethodDetails] = useState(null);
   const [payoutDetails, setPayoutDetails] = useState(null);
 
+  // Handle input changes with namespaced data
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Check if the name corresponds to a nested object field
-    if (formData.payinDetails && name in formData.payinDetails) {
-      setFormData((prevData) => ({
-        ...prevData,
-        payinDetails: { ...prevData.payinDetails, [name]: value },
-      }));
-    } else if (formData.payoutDetails && name in formData.payoutDetails) {
-      setFormData((prevData) => ({
-        ...prevData,
-        payoutDetails: { ...prevData.payoutDetails, [name]: value },
-      }));
-    } else {
-      setFormData((prevData) => ({ ...prevData, [name]: value }));
-    }
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handlePayinMethodChange = (event) => {
     const selectedMethod = event.target.value;
-    const methodDetails = selectedOffering?.data?.payin?.methods.find(
-      (method) => method.kind === selectedMethod
-    );
-    setPayinMethodDetails(methodDetails);
-    
-    // Initialize empty fields for payinDetails
-    const initialPayinDetails = Object.keys(methodDetails?.requiredPaymentDetails?.properties || {}).reduce(
-      (details, key) => ({ ...details, [key]: '' }),
-      {}
-    );
+    const methodDetails = selectedOffering?.data?.payin?.methods.find(method => method.kind === selectedMethod);
+
+    // If methodDetails or requiredPaymentDetails is empty, set to empty object
+    setPayinMethodDetails(methodDetails?.requiredPaymentDetails?.properties ? methodDetails : {});
 
     setFormData((prevData) => ({
       ...prevData,
       payinMethod: selectedMethod,
-      payinDetails: initialPayinDetails, // Initialize payinDetails with empty fields
+      payinDetails: {},
     }));
   };
 
-  const handlePayoutDetailsChange = (event) => {
+  const handlePayoutMethodChange = (event) => {
     const selectedMethod = event.target.value;
-    const methodDetails = selectedOffering?.data?.payout?.methods.find(
-      (method) => method.kind === selectedMethod
-    );
-    setPayoutDetails(methodDetails);
-    
-    // Initialize empty fields for payoutDetails
-    const initialPayoutDetails = Object.keys(methodDetails?.requiredPaymentDetails?.properties || {}).reduce(
-      (details, key) => ({ ...details, [key]: '' }),
-      {}
-    );
+    const methodDetails = selectedOffering?.data?.payout?.methods.find(method => method.kind === selectedMethod);
+
+    // Handle empty payout details similarly
+    setPayoutDetails(methodDetails?.requiredPaymentDetails?.properties ? methodDetails : {});
 
     setFormData((prevData) => ({
       ...prevData,
       payoutMethod: selectedMethod,
-      payoutDetails: initialPayoutDetails, // Initialize payoutDetails with empty fields
+      payoutDetails: {},
+    }));
+  };
+
+  // Handle changes specific to payinDetails and payoutDetails separately
+  const handlePayinDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      payinDetails: {
+        ...prevData.payinDetails,
+        [name]: value,
+      },
+    }));
+  };
+
+  const handlePayoutDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      payoutDetails: {
+        ...prevData.payoutDetails,
+        [name]: value,
+      },
     }));
   };
 
@@ -389,7 +387,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       addClose(quoteDetails.exchangeId, quoteDetails.pfiDid, reason);
       setPopupOpen(false);
       toast.success('Exchange closed successfully');
-      window.location.reload();
+      navigate("/transactions")
   };  
 
   const createExchange = async (offering, amount, payinMethod, payinPaymentDetails, payoutMethod, payoutPaymentDetails) => {
@@ -466,11 +464,21 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
 
   const formatMessages = (exchanges) => {
+    console.log(exchanges)
     const formattedMessages = exchanges.map(exchange => {
         const latestMessage = exchange[exchange.length - 1]
         const rfqMessage = exchange.find(message => message.kind === 'rfq')
         const quoteMessage = exchange.find(message => message.kind === 'quote')
-        // console.log('Quote Message:', quoteMessage);
+        const orderMessage = exchange.find(message => message.kind === 'order')
+        const orderStatusMessage = exchange.find(message => message.kind === 'orderStatus')
+        const closeMessage = exchange.find(message => message.kind === 'close')
+        const sender = rfqMessage?.privateData.payin.paymentDetails.accountNumber
+        const rfqTime = rfqMessage?.metadata.createdAt
+        const quoteTime = quoteMessage?.metadata.createdAt
+        const orderTime = orderMessage?.metadata.createdAt
+        const closeTime = closeMessage?.metadata.createdAt
+        const orderStatusTime = orderStatusMessage?.metadata.createdAt
+        const orderStatus = orderStatusMessage?.data?.orderStatus
         const status = generateExchangeStatusValues(latestMessage)
         const fee = quoteMessage?.data['payin']?.['fee']
         const payinAmount = quoteMessage?.data['payin']?.['amount']
@@ -486,22 +494,30 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
           exchangeId: latestMessage.metadata.exchangeId,
           createdTime: rfqMessage.createdAt,
           ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
-          from: 'You',
-          to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
+          from: sender,
+          to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber || " " + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
           pfiDid: rfqMessage.metadata.to
         })
         return {
+          message: latestMessage,
           id: latestMessage.metadata.exchangeId,
           payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
           payinCurrency: quoteMessage.data['payin']?.['currencyCode'] ?? null,
           payoutAmount: quoteMessage?.data['payout']?.['amount'] ?? null,
           payoutCurrency: quoteMessage.data['payout']?.['currencyCode'],
           status,
+          exchangeId: latestMessage.metadata.exchangeId,
           createdTime: rfqMessage.createdAt,
           ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
-          from: 'You',
-          to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
-          pfiDid: rfqMessage.metadata.to
+          from: sender,
+          to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber || " " + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
+          pfiDid: rfqMessage.metadata.to,
+          rfqTime: rfqTime,
+          quoteTime: quoteTime,
+          orderTime: orderTime,
+          orderStatusTime: orderStatusTime,
+          orderStatus: orderStatus,
+          closeTime: closeTime
         }
       })
 
@@ -601,10 +617,11 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       try {
           const exchanges = await fetchExchanges(selectedOffering.metadata.from);
           // allExchanges.push(...exchanges)
-        setTransactions(exchanges);
+        // setTransactions(exchanges);
         // localStorage.setItem('transactions', JSON.stringify(exchanges));
         // console.log('Exchanges from Polling:', exchanges);
-        updateExchanges(exchanges.reverse());
+        // updateExchanges(exchanges.reverse());
+        updateExchanges(exchanges);
       } catch (error) {
         console.error('Failed to fetch exchanges:', error);
       }
@@ -654,23 +671,23 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                   </option>
                 ))}
               </select>
-              {payinMethodDetails && (
-                <div className="mt-3">
-                  {Object.keys(payinMethodDetails.requiredPaymentDetails.properties).map((key, index) => (
-                    <div key={index} className="mt-2">
-                      <label className="mb-2.5 block text-white">{payinMethodDetails.requiredPaymentDetails.properties[key].title}</label>
-                      <input
-                        type="text"
-                        name={key}
-                        value={formData.payinDetails[key] || ''}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+              {payinMethodDetails && Object.keys(payinMethodDetails.requiredPaymentDetails?.properties || {}).length > 0 && (
+                  <div className="mt-3">
+                    {Object.keys(payinMethodDetails.requiredPaymentDetails.properties).map((key, index) => (
+                      <div key={index} className="mt-2">
+                        <label className="mb-2.5 block text-white">{payinMethodDetails.requiredPaymentDetails.properties[key].title}</label>
+                        <input
+                          type="text"
+                          name={key}
+                          value={formData.payinDetails[key] || ''}
+                          onChange={handlePayinDetailsChange}
+                          required
+                          className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
 
             <div>
@@ -678,7 +695,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
               <select
                 name="payoutMethod"
                 value={formData.payoutMethod}
-                onChange={handlePayoutDetailsChange}
+                onChange={handlePayoutMethodChange}
                 required
                 className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
               >
@@ -689,23 +706,23 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                   </option>
                 ))}
               </select>
-              {payoutDetails && (
-                <div className="mt-3">
-                  {Object.keys(payoutDetails.requiredPaymentDetails.properties).map((key, index) => (
-                    <div key={index} className="mt-2">
-                      <label className="mb-2.5 block text-white">{payoutDetails.requiredPaymentDetails.properties[key].title}</label>
-                      <input
-                        type="text"
-                        name={key}
-                        value={formData.payoutDetails[key] || ''}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+              {payoutDetails && Object.keys(payoutDetails.requiredPaymentDetails?.properties || {}).length > 0 && (
+                  <div className="mt-3">
+                    {Object.keys(payoutDetails.requiredPaymentDetails.properties).map((key, index) => (
+                      <div key={index} className="mt-2">
+                        <label className="mb-2.5 block text-white">{payoutDetails.requiredPaymentDetails.properties[key].title}</label>
+                        <input
+                          type="text"
+                          name={key}
+                          value={formData.payoutDetails[key] || ''}
+                          onChange={handlePayoutDetailsChange}
+                          required
+                          className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -828,10 +845,11 @@ const OrderStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
   </div>
 );
 
-const OrderCompletedStep: React.FC = () => {
+const OrderCompletedStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep }) => {
   const navigate = useNavigate();
   const goHome = () => {
-  navigate('/dashboard');
+  // navigate('/dashboard');
+  goToStep(0)
   }
 
   return (
@@ -888,7 +906,7 @@ return (
       {currentStep === 2 && <KycStep selectedOffering={selectedOffering} onNext={handleNextStep} />}
       {currentStep === 3 && <QuoteStep onNext={handleNextStep} selectedOffering={selectedOffering}/>}
       {currentStep === 4 && <OrderStep onNext={handleNextStep} />}
-      {currentStep === 5 && <OrderCompletedStep />}
+      {currentStep === 5 && <OrderCompletedStep goToStep={goToStep}/>}
   </div>
   </>
   );

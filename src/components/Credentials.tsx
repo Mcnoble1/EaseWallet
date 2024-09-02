@@ -66,10 +66,13 @@ const Credentials = ({userDID}: any) => {
         },
         })
         .then((response) => {
-            console.log(response);
-            console.log(response.data);
             localStorage.setItem('credentialJWT', response.data)
+            setFormData({
+              name: '',
+              countryCode: '',
+            })
             setPopupOpen(false);
+            fetchCredential();
         })
         .catch((error) => {
             console.error('There was an error!', error);
@@ -82,6 +85,10 @@ const Credentials = ({userDID}: any) => {
     if (!credentialJWT) {
       return;
     }
+    fetchCredential();
+  }, []);
+
+  const fetchCredential = () => {
     const vc: any = Jwt.parse({ jwt: credentialJWT }).decoded.payload['vc']
     setCredentialDetails({
     title: vc.type[vc.type.length - 1].replace(/(?<!^)(?<![A-Z])[A-Z](?=[a-z])/g, ' $&'),
@@ -89,13 +96,13 @@ const Credentials = ({userDID}: any) => {
     countryCode: vc.credentialSubject['countryOfResidence'],
     issuanceDate: new Date(vc.issuanceDate).toLocaleDateString(undefined, {dateStyle: 'medium'}),
   })
-  }, []);
+}
 
   return (
     <>
       {Object.keys(credentialDetails).length > 0 ? (
     <main>
-    <div className="grid text-black grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
+    <div className="grid text-black lg:grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
       <div className="flex justify-between overflow-hidden p-2 rounded-lg border border-stroke bg-white shadow-md shadow-meta-5 dark:border-strokedark dark:bg-boxdark">
           <div>
             <p className='text-lg font-bold'>{credentialDetails.title}</p>

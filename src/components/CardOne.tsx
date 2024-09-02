@@ -33,7 +33,7 @@ const CardOne = () => {
       {PFIs.map((pfi) => (
         <div
           key={pfi.did}
-          className={`relative flex flex-col rounded-lg py-3 px-7.5 shadow-default transition-all duration-300`}
+          className={`relative flex flex-col rounded-lg py-3 px-3 shadow-default transition-all duration-300`}
           style={{
             backgroundColor: pfi.backgroundColor,
             marginBottom: '15px'
@@ -57,7 +57,7 @@ const CardOne = () => {
 
           {visibleOfferings[pfi.did] && selectedOfferings[pfi.did] && (
             <div
-              className="absolute top-full left-0 mt-2 w-full rounded-lg p-4 shadow-lg z-10"
+              className="absolute top-full left-0 mt-1 w-full rounded-lg p-2 lg:p-4 shadow-lg z-10"
               style={{
                 backgroundColor: pfi.backgroundColor,
               }}
@@ -65,7 +65,7 @@ const CardOne = () => {
               {selectedOfferings[pfi.did].map((offering, i) => (
                 <div key={i} className="flex items-center mt-2">
                   {currencyIcons[offering.data.payin.currencyCode]}
-                  <p className="text-white text-lg ml-2">
+                  <p className="text-white text-md ml-2">
                   {offering.data.payin.currencyCode} to {offering.data.payout.currencyCode}&nbsp;&nbsp;
                   </p>
                   {currencyIcons[offering.data.payout.currencyCode]}

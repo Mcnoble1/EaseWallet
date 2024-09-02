@@ -34,6 +34,13 @@ const TransactionsTable: React.FC = ({ onClick }) => {
     setSelectedTransaction([selectedTransaction]);
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const formatTime = (datestring) => {
+    const date = new Date(datestring);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
   
   const generateExchangeStatusValues = (exchangeMessage) => {
     if (exchangeMessage instanceof Close) {
@@ -104,7 +111,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
                    <td className="p-2.5 xl:p-5">{formatDatetime(transaction.createdTime)}</td>
                    <td className="p-2.5 xl:p-5">Outgoing Payment</td>
                    <td className="p-2.5 xl:p-5">{transaction.payinAmount} {transaction.payinCurrency}</td>
-                   <td className="p-2.5 xl:p-5"><span className={`${(transaction.status) === "completed" ? 'bg-green' : 'bg-secondary' } px-2 pb-1 rounded-2xl font-medium text-white`}>{transaction.status}</span></td>
+                   <td className="p-2.5 xl:p-5"><span className={`${(transaction.status) === "completed" ? 'bg-green' : 'bg-danger' } px-2 pb-1 rounded-2xl font-medium text-white`}>{transaction.status}</span></td>
                    <td className="p-2.5 xl:p-5">
                      <div className="flex flex-row gap-4">
                        <button
@@ -128,42 +135,45 @@ const TransactionsTable: React.FC = ({ onClick }) => {
       </div>
 
       {isSidebarOpen && (
-        <div className="fixed right-0 top-0 ease-in h-screen border-l border-lime-800 w-full lg:w-[25%] text-white z-9999  bg-opacity-50">
-      {selectedTransaction && selectedTransaction.map((transaction, index) => (
-        <div className="bg-white h-screen p-5 flex flex-col text-black overflow-y-auto">
+  <div className="fixed right-0 top-0 h-screen borde w-full lg:w-[25%] z-9999 bg-primary text-white shadow-lg">
+    {selectedTransaction && selectedTransaction.map((transaction, index) => (
+      <div className="h-screen p-5 flex flex-col overflow-y-auto">
         <div className="flex justify-end">
           <FontAwesomeIcon 
             onClick={() => setIsSidebarOpen(false)} 
             icon={faXmark} 
-            className="h-6 w-6 hover:bg-gray-200 cursor-pointer" 
+            className="h-6 w-6 text-gray-400 hover:text-white cursor-pointer transition duration-150" 
           />
         </div>
         
         {/* Summary Card */}
-        <div className="bg-blue-600 text-black p-4 rounded-lg shadow-md mb-4 flex flex-col items-center">
-          <FontAwesomeIcon icon={faCoins} className="text-whit text-4xl mb-2" />
+        <div className="bg-tertiary text-white p-4 rounded-lg shadow-md mb-4 flex flex-col items-center">
+          <FontAwesomeIcon icon={faCoins} className="text-yellow-400 text-4xl mb-2" />
           <p className="text-lg font-semibold text-center">Withdrawal to {transaction.to}</p>
           <p className="text-2xl font-bold mt-2">{transaction.payinAmount} {transaction.payinCurrency}</p>
-          <p className="text-gray-300 "><span className={`${(transaction.status) === "completed" ? 'bg-green' : 'bg-secondary' } px-2 pb-1 rounded-2xl font-medium text-white`}>{transaction.status}</span></p>
-          <p className="text-gray-300 mt-1">{formatDatetime(transaction.createdTime)}</p>
+          <p className={`text-sm mt-2 px-2 py-1 rounded-lg font-medium ${transaction.status === "completed" ? 'bg-green' : 'bg-danger'}`}>
+            {transaction.status}
+          </p>
+          <p className="text-gray-400 mt-1">{formatDatetime(transaction.createdTime)}</p>
         </div>
 
         {/* Transaction Details Dropdown */}
         <div className="mb-4">
           <div 
-            className="flex justify-between items-center cursor-pointer"
+            className="flex justify-between items-center cursor-pointer text-white"
             onClick={() => setShowTransactionDetails(!showTransactionDetails)}
           >
             <p className="text-lg font-semibold">Transaction details</p>
-            <FontAwesomeIcon icon={showTransactionDetails ? faCaretUp : faCaretDown} />
+            <FontAwesomeIcon icon={showTransactionDetails ? faCaretUp : faCaretDown} className="text-gray-400" />
           </div>
           {showTransactionDetails && (
-            <div className="mt-2">
+            <div className="mt-2 text-gray-300">
               <p>Exchange ID: {transaction.id}</p>
-              <p>Recipient Amount: {transaction.payoutAmount} {transaction.payoutCurrency}</p>
-              <p>Fee: {transaction.fee}</p>
+              <p>Sender: {transaction.from}</p>
               <p>Amount: {transaction.payinAmount} {transaction.payinCurrency}</p>
               <p>Recipient: {transaction.to}</p>
+              <p>Fee: {transaction.fee}</p>
+              <p>Recipient Amount: {transaction.payoutAmount} {transaction.payoutCurrency}</p>
             </div>
           )}
         </div>
@@ -171,19 +181,18 @@ const TransactionsTable: React.FC = ({ onClick }) => {
         {/* Transfer Details Dropdown */}
         <div className="mb-4">
           <div 
-            className="flex justify-between items-center cursor-pointer"
+            className="flex justify-between items-center cursor-pointer text-white"
             onClick={() => setShowTransferDetails(!showTransferDetails)}
           >
             <p className="text-lg font-semibold">Transfer details</p>
-            <FontAwesomeIcon icon={showTransferDetails ? faCaretUp : faCaretDown} />
+            <FontAwesomeIcon icon={showTransferDetails ? faCaretUp : faCaretDown} className="text-gray-400" />
           </div>
           {showTransferDetails && (
-            <div className="mt-2">
+            <div className="mt-2 text-gray-300">
               <p>Order ID: {transaction.id}</p>
               <p>Fee: {transaction.fee}</p>
               <p>Amount: {transaction.payinAmount} {transaction.payinCurrency}</p>
               <p>Recipient: {transaction.to}</p>
-              {/* <p className="text-gray-500 text-sm">A transfer might include multiple transactions to the same bank account</p> */}
             </div>
           )}
         </div>
@@ -191,34 +200,63 @@ const TransactionsTable: React.FC = ({ onClick }) => {
         {/* Transaction Timeline Dropdown */}
         <div className="mb-4">
           <div 
-            className="flex justify-between items-center cursor-pointer"
+            className="flex justify-between items-center cursor-pointer text-white"
             onClick={() => setShowTransactionTimeline(!showTransactionTimeline)}
           >
             <p className="text-lg font-semibold">Transaction timeline</p>
-            <FontAwesomeIcon icon={showTransactionTimeline ? faCaretUp : faCaretDown} />
+            <FontAwesomeIcon icon={showTransactionTimeline ? faCaretUp : faCaretDown} className="text-gray-400" />
           </div>
           {showTransactionTimeline && (
             <div className="mt-2">
-              <p>Expiration Date: {formatDatetime(transaction.expirationTime)}</p>
-              <p>Created: {formatDatetime(transaction.createdTime)}</p>
-              <p>Status: {renderOrderStatus(transaction.id)}</p>
-              <p>Completed: {formatDatetime(transaction.completedTime)}</p>
-              {/* <p className="text-gray-500 text-sm">*In certain cases, a transaction may take longer than described above...</p> */}
+              <div className="relative">
+                {/* Vertical line for timeline */}
+                <div className="absolute left-4 top-0 h-full border-l-2 border-gray-600"></div>
+                {/* Timeline events */}
+                <div className="relative pl-8">
+                  <div className="mb-4 flex items-center">
+                    <div className="h-4 w-4 bg-green rounded-full"></div>
+                    <p className="ml-4 text-gray-300">Requested for Quote: {formatTime(transaction.rfqTime)}</p>
+                  </div>
+                  <div className="mb-4 flex items-center">
+                    <div className="h-4 w-4 bg-green rounded-full"></div>
+                    <p className="ml-4 text-gray-300">Quote Generated At: {formatTime(transaction.quoteTime)}</p>
+                  </div>
+                  <div className="mb-4 flex items-center">
+                    <div className="h-4 w-4 bg-green rounded-full"></div>
+                    <p className="ml-4 text-gray-300">Order Placed: {formatTime(transaction.orderTime)}</p>
+                  </div>
+                  <div className="mb-4 flex items-center">
+                    <div className="h-4 w-4 bg-green rounded-full"></div>
+                    <p className="ml-4 text-gray-300">Order Status: {transaction.status}</p>
+                  </div>
+                  <div className="mb-4 flex items-center">
+                    <div className="h-4 w-4 bg-green rounded-full"></div>
+                    <p className="ml-4 text-gray-300">Order Completed: {formatTime(transaction.closeTime)}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
         {/* Confirmation Button */}
-        {/* <button className="bg-blue-600 text-whit py-2 rounded-lg mt-auto flex items-center justify-center">
+        <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-auto flex items-center justify-center transition duration-150">
           <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
           GET CONFIRMATION
-        </button> */}
+        </button>
       </div>
-      ))}
-    </div>
-    )}
+    ))}
+  </div>
+)}
+
     </>
   );
 };
 
 export default TransactionsTable;
+
+
+
+
+
+
