@@ -99,7 +99,7 @@ const SignIn = () => {
             <span className="mb-5 block text-white font-medium">Enter your Email and Password to sign in</span>
 
 
-            <form onSubmit={handleSignIn} className='w-[80%]'>
+            <form onSubmit={handleSignIn} className='w-[90%] lg:w-[80%]'>
               <div className="mb-4 ">
                 <label className="mb-2.5 block font-medium text-white dark:text-white">
                   Username / Email address
