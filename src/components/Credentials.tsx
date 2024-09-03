@@ -72,7 +72,7 @@ const Credentials = ({userDID}: any) => {
               countryCode: '',
             })
             setPopupOpen(false);
-            fetchCredential();
+            window.location.reload();
         })
         .catch((error) => {
             console.error('There was an error!', error);

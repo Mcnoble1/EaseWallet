@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import 'react-toastify/dist/ReactToastify.css'; 
-import { getFeedbacks, deleteFeedback } from '../api/feedbackApi';
 import { formatDatetime } from '../utils/helpers';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faCaretDown, faCaretUp, faFileAlt, faCoins, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faCaretDown, faCaretUp, faFileAlt, faCoins, faCaretRight, faRankingStar, faStar } from '@fortawesome/free-solid-svg-icons';
 import { Close } from '@tbdex/http-client'
 import { useTransactionContext } from './TransactionContext';
+import ReviewAndRating from '../components/ReviewAndRating';
 
 
 interface Transaction {
@@ -27,12 +27,27 @@ const TransactionsTable: React.FC = ({ onClick }) => {
   const [showTransactionTimeline, setShowTransactionTimeline] = useState(true);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const popup = useRef<HTMLDivElement | null>(null);
-  
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+
   const toggleSidebar = (transactionId: string) => {
     const selectedTransaction = transactions.find(transaction => transaction.id === transactionId);
     // console.log('Selected Transaction:', selectedTransaction);
     setSelectedTransaction([selectedTransaction]);
     setIsSidebarOpen(!isSidebarOpen);
+    setIsReviewOpen(false);
+  };
+
+  const handleReviewSubmit = (rating: number, review: string) => {
+    const reviews = JSON.parse(localStorage.getItem('reviews') || '[]');
+    const newReview = {
+      pfi: selectedTransaction[0]?.pfiDid,
+      name: selectedTransaction[0].from,
+      rating,
+      review,
+    };
+    reviews.push(newReview);
+    localStorage.setItem('reviews', JSON.stringify(reviews));
+    setIsReviewOpen(false);
   };
 
   const formatTime = (datestring) => {
@@ -147,7 +162,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
         </div>
         
         {/* Summary Card */}
-        <div className="bg-tertiary text-white p-4 rounded-lg shadow-md mb-4 flex flex-col items-center">
+        <div className="bg-tertiary mt-2 text-white p-4 rounded-lg shadow-md mb-4 flex flex-col items-center">
           <FontAwesomeIcon icon={faCoins} className="text-yellow-400 text-4xl mb-2" />
           <p className="text-lg font-semibold text-center">Withdrawal to {transaction.to}</p>
           <p className="text-2xl font-bold mt-2">{transaction.payinAmount} {transaction.payinCurrency}</p>
@@ -167,32 +182,19 @@ const TransactionsTable: React.FC = ({ onClick }) => {
             <FontAwesomeIcon icon={showTransactionDetails ? faCaretUp : faCaretDown} className="text-gray-400" />
           </div>
           {showTransactionDetails && (
-            <div className="mt-2 text-gray-300">
-              <p>Exchange ID: {transaction.id}</p>
-              <p>Sender: {transaction.from}</p>
-              <p>Amount: {transaction.payinAmount} {transaction.payinCurrency}</p>
-              <p>Recipient: {transaction.to}</p>
-              <p>Fee: {transaction.fee}</p>
-              <p>Recipient Amount: {transaction.payoutAmount} {transaction.payoutCurrency}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Transfer Details Dropdown */}
-        <div className="mb-4">
-          <div 
-            className="flex justify-between items-center cursor-pointer text-white"
-            onClick={() => setShowTransferDetails(!showTransferDetails)}
-          >
-            <p className="text-lg font-semibold">Transfer details</p>
-            <FontAwesomeIcon icon={showTransferDetails ? faCaretUp : faCaretDown} className="text-gray-400" />
-          </div>
-          {showTransferDetails && (
-            <div className="mt-2 text-gray-300">
-              <p>Order ID: {transaction.id}</p>
-              <p>Fee: {transaction.fee}</p>
-              <p>Amount: {transaction.payinAmount} {transaction.payinCurrency}</p>
-              <p>Recipient: {transaction.to}</p>
+            <div className="mt-2">
+              <p className='text-sm text-bodydark'>Exchange ID</p>
+              <p >{transaction.id}</p>
+              <p className='text-sm text-bodydark'>Sender</p>
+              <p>{transaction.from}</p>
+              <p className='text-sm text-bodydark'>Amount</p>
+              <p>{transaction.payinAmount} {transaction.payinCurrency}</p>
+              <p className='text-sm text-bodydark'>Fee</p>
+              <p>{transaction.platformFee}</p>
+              <p className='text-sm text-bodydark'>Recipient</p>
+              <p>{transaction.to}</p>
+              <p className='text-sm text-bodydark'>Recipient Amount</p>
+              <p>{transaction.payoutAmount} {transaction.payoutCurrency}</p>
             </div>
           )}
         </div>
@@ -213,25 +215,40 @@ const TransactionsTable: React.FC = ({ onClick }) => {
                 <div className="absolute left-4 top-0 h-full border-l-2 border-gray-600"></div>
                 {/* Timeline events */}
                 <div className="relative pl-8">
-                  <div className="mb-4 flex items-center">
-                    <div className="h-4 w-4 bg-green rounded-full"></div>
-                    <p className="ml-4 text-gray-300">Requested for Quote: {formatTime(transaction.rfqTime)}</p>
+                  <div className="mb-2 flex items-center">
+                    <div className="h-2 w-2 bg-green rounded-full"></div>
+                    <div>
+                      <p className="ml-4 text-bodydark text-sm">Requested for Quote</p>
+                      <p className="ml-4 text-sm">{formatTime(transaction.rfqTime)}</p>
+                    </div>
                   </div>
-                  <div className="mb-4 flex items-center">
-                    <div className="h-4 w-4 bg-green rounded-full"></div>
-                    <p className="ml-4 text-gray-300">Quote Generated At: {formatTime(transaction.quoteTime)}</p>
+                  <div className="mb-2 flex items-center">
+                    <div className="h-2 w-2 bg-green rounded-full"></div>
+                    <div>
+                    <p className="ml-4 text-bodydark text-sm">Quote Generated</p>
+                      <p className="ml-4 text-sm">{formatTime(transaction.quoteTime)}</p>
+                    </div>
                   </div>
-                  <div className="mb-4 flex items-center">
-                    <div className="h-4 w-4 bg-green rounded-full"></div>
-                    <p className="ml-4 text-gray-300">Order Placed: {formatTime(transaction.orderTime)}</p>
+                  <div className="mb-2 flex items-center">
+                    <div className="h-2 w-2 bg-green rounded-full"></div>
+                    <div>
+                    <p className="ml-4 text-bodydark text-sm">Order Placed</p>
+                      <p className="ml-4 text-sm">{formatTime(transaction.orderTime)}</p>
+                    </div>
                   </div>
-                  <div className="mb-4 flex items-center">
-                    <div className="h-4 w-4 bg-green rounded-full"></div>
-                    <p className="ml-4 text-gray-300">Order Status: {transaction.status}</p>
+                  <div className="mb-2 flex items-center">
+                    <div className="h-2 w-2 bg-green rounded-full"></div>
+                    <div>
+                    <p className="ml-4 text-bodydark text-sm">Order Status</p>
+                      <p className="ml-4 text-sm">{transaction.status}</p>
+                    </div>
                   </div>
-                  <div className="mb-4 flex items-center">
-                    <div className="h-4 w-4 bg-green rounded-full"></div>
-                    <p className="ml-4 text-gray-300">Order Completed: {formatTime(transaction.closeTime)}</p>
+                  <div className="mb-2 flex items-center">
+                    <div className="h-2 w-2 bg-green rounded-full"></div>
+                    <div>
+                    <p className="ml-4 text-bodydark text-sm">Order Completed</p>
+                      <p className="ml-4 text-sm">{formatTime(transaction.closeTime)}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -239,11 +256,20 @@ const TransactionsTable: React.FC = ({ onClick }) => {
           )}
         </div>
 
-        {/* Confirmation Button */}
-        <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-auto flex items-center justify-center transition duration-150">
-          <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
-          GET CONFIRMATION
+        {/* Rating Button */}
+        <button 
+          onClick={() => setIsReviewOpen(true)}
+          className="bg-secondary hover:bg-secondary/50 text-white py-2 rounded-2xl mt-auto flex items-center justify-center transition duration-150">
+          <FontAwesomeIcon icon={faStar} className="mr-2 text-yellow" />
+          Rate this Transaction
         </button>
+
+         {/* Review and Rating Form */}
+         {isReviewOpen && (
+          <div className="fixed bottom-0 right-0 w-full lg:w-[25%] p-4 bg-primary shadow-lg transform transition-transform ease-in duration-300">
+            <ReviewAndRating onSubmit={handleReviewSubmit} onClose={() => setIsReviewOpen(false)}/>
+          </div>
+        )}
       </div>
     ))}
   </div>
@@ -254,6 +280,11 @@ const TransactionsTable: React.FC = ({ onClick }) => {
 };
 
 export default TransactionsTable;
+
+
+
+
+
 
 
 

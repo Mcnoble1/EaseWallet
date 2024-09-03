@@ -6,7 +6,6 @@ import { PFIs } from './utils/helpers';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Convert from './pages/Payments/Convert';
-import Send from './pages/Payments/Send';
 import Pfi from './pages/Payments/Pfi';
 import Transactions from './pages/Transactions';
 import SignIn from './pages/SignIn';
@@ -60,7 +59,6 @@ function App() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/payments/convert" element={<Convert />} />
-        <Route path="/payments/send" element={<Send />} />
         <Route path="/payments/pfi/:did" element={<Pfi />} />
         <Route element={<DefaultLayout />}>
           <Route element={<Dashboard />} />

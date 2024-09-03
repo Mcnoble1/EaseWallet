@@ -42,7 +42,7 @@ const Categories: React.FC = () => {
           <main>
             <div className="mx-auto p-4 md:p-6 2xl:p-10">
               <div className="mb-6 flex flex-row gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Breadcrumb pageName="Convert" /> 
+                <Breadcrumb pageName="Send Money" /> 
               </div>
 
               <div className="w-full">

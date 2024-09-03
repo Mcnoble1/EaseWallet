@@ -13,9 +13,7 @@ const steps = [
   'See Offerings',
   'Check Credentials',
   'Get Quote',
-  'View Quote',
   'Place Order',
-  'Order Completed',
 ];
 
 // Step Indicator Component
@@ -93,7 +91,7 @@ const CurrencyInputStep: React.FC<{ onNext: () => void; onFetchOfferings: any }>
 
   return (
     <div className='w-[90%] lg:w-[60%]'>
-      <h4 className="text-title-sm mb-4 font-semibold text-white">Swap Currency</h4>
+      <h4 className="text-title-sm mb-4 font-semibold text-white"></h4>
       <div className="bg-tertiary w-full rounded-lg p-4 shadow-md">
         <form>
           <div className="flex flex-col gap-5.5">
@@ -267,6 +265,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const { transactions, setTransactions } = useTransactionContext();
   const [formData, setFormData] = useState({
     amount: '',
+    fee: '',
     payoutDetails: {},
     payinMethod: '',
     payoutMethod: '',
@@ -301,9 +300,28 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const [payoutDetails, setPayoutDetails] = useState(null);
 
   // Handle input changes with namespaced data
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prevData) => ({ ...prevData, [name]: value }));
+  // };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    let fee = '';
+
+    // Calculate the fee based on the amount (1% fee)
+    if (name === 'amount') {
+      const amount = parseFloat(value);
+      if (!isNaN(amount)) {
+        fee = (amount * 0.01).toFixed(2);
+      }
+    }
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+      fee,
+    }));
   };
 
   const handlePayinMethodChange = (event) => {
@@ -379,7 +397,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = new Intl.DateTimeFormat('en-US', options).format(new Date(datetimeString));
     const formattedTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(datetimeString));
-    return (`${formattedDate} at ${formattedTime}`);
+    return (`${formattedDate} ${formattedTime}`);
   };
 
 
@@ -472,6 +490,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         const orderMessage = exchange.find(message => message.kind === 'order')
         const orderStatusMessage = exchange.find(message => message.kind === 'orderStatus')
         const closeMessage = exchange.find(message => message.kind === 'close')
+        const platformFee = formData.fee
         const sender = rfqMessage?.privateData.payin.paymentDetails.accountNumber
         const rfqTime = rfqMessage?.metadata.createdAt
         const quoteTime = quoteMessage?.metadata.createdAt
@@ -486,7 +505,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         setQuoteDetails({
           message: latestMessage,
           id: latestMessage.metadata.exchangeId,
-          payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
+          payinAmount: (fee ? Number(payinAmount) + Number(fee) + Number(platformFee) : Number(payinAmount)  + Number(platformFee)).toString() || rfqMessage.data['payinAmount'],
           payinCurrency: quoteMessage.data['payin']?.['currencyCode'] ?? null,
           payoutAmount: quoteMessage?.data['payout']?.['amount'] ?? null,
           payoutCurrency: quoteMessage.data['payout']?.['currencyCode'],
@@ -513,11 +532,13 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
           to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber || " " + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
           pfiDid: rfqMessage.metadata.to,
           rfqTime: rfqTime,
+          platformFee: platformFee,
           quoteTime: quoteTime,
           orderTime: orderTime,
           orderStatusTime: orderStatusTime,
           orderStatus: orderStatus,
-          closeTime: closeTime
+          closeTime: closeTime,
+          pfi: selectedOffering.metadata.from
         }
       })
 
@@ -635,7 +656,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   };
   
   return (
-    <div className='w-[90%] lg:w-[60%]'>
+    <div className='w-[100%] lg:w-[60%]'>
     <div className="p-4 md:p-8 max-w-lg mx-auto">
       {step === 1 && (
         <div className="bg-tertiary w-full rounded-lg p-4 shadow-md">
@@ -654,6 +675,17 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                 className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
               />
             </div>
+
+              <div>
+                <label className="mb-2.5 block text-white">Fee</label>
+                <input
+                  type="text"
+                  name="fee"
+                  value={formData.fee}
+                  disabled
+                  className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
+                />
+              </div>
 
             <div>
               <label className="mb-2.5 block text-white">Payin Method</label>
@@ -739,28 +771,45 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       )}
 
       {step === 2 && quoteDetails && (
-        <div className="space-y-4">
-          <h4 className="text-xl font-semibold text-white text-center mb-4">Quote Details</h4>
-          <div className="space-y-2">
-            <p className="text-lg font-semibold">Payin Amount: <span className="font-medium text-white">{quoteDetails.payinAmount} {quoteDetails.payinCurrency}</span></p>
-            <p className="text-lg font-semibold">Payout Amount: <span className="font-medium text-white">{quoteDetails.payoutAmount} {quoteDetails.payoutCurrency}</span></p>
-            <p className="text-lg font-semibold">Status: <span className={`${(quoteDetails.status) === "completed" ? 'bg-green' : 'bg-secondary' } px-2 pb-1 rounded-2xl font-medium text-white`}>{quoteDetails.status}</span></p>
-            <p className="text-lg font-semibold">Creation Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.createdTime)}</span></p>
-            <p className="text-lg font-semibold">Expiration Time: <span className="font-medium text-white">{formatDatetime(quoteDetails.expirationTime)}</span></p>
-            <p className="text-lg font-semibold">Recipient: <span className="font-medium text-white">{quoteDetails.to}</span></p>
-
+        <div className="bg-tertiary w-full rounded-lg p-4 shadow-md">
+          <h4 className="text-title-sm font-semibold text-center text-white">Quote Details</h4>
+          <div className="space-y-5 mt-3">
+            <div className='flex text-sm justify-between'>
+              <p className="text-lg font-semibold">Payin Amount</p>
+              <p className="font-medium text-lg text-white">{quoteDetails.payinAmount} {quoteDetails.payinCurrency}</p>
+            </div>
+            <div className='flex text-sm justify-between'>
+              <p className="text-lg font-semibold">Payout Amount</p>
+              <p className="font-medium text-white text-lg">{quoteDetails.payoutAmount} {quoteDetails.payoutCurrency}</p>
+            </div>
+            <div className='flex text-sm justify-between'>
+              <p className="text-lg font-semibold">Status</p>
+              <p className={`${(quoteDetails.status) === "completed" ? 'bg-green' : 'bg-secondary' } px-2 rounded-2xl font-medium text-white text-lg`}>{quoteDetails.status}</p>
+            </div>
+            <div className='flex text-sm justify-between'>
+              <p className="text-lg font-semibold">Creation Time</p>
+              <p className="font-medium text-white text-lg">{formatDatetime(quoteDetails.createdTime)}</p>
+            </div>
+            <div className='flex text-sm justify-between'>
+              <p className="text-lg font-semibold">Expiration Time</p>
+              <p className="font-medium text-white text-lg">{formatDatetime(quoteDetails.expirationTime)}</p>
+            </div>
+            <div className='flex text-sm justify-between'>
+              <p className="text-lg font-semibold">Recipient</p>
+              <p className="font-medium text-white text-lg">{quoteDetails.to}</p>
+            </div>
           </div>
-          <div className="flex gap-4">
+          <div className="mt-5 flex gap-4">
             <button
               onClick={handleOrder}
-              className="flex-1 py-2 px-4 bg-green text-white font-semibold rounded-md hover:bg-green-600"
+              className="flex-1 py-2 px-4 bg-green text-white font-semibold rounded-2xl hover:bg-green-600"
             >
               Order
             </button>
             <button
               ref={trigger}
               onClick={() => setPopupOpen(!popupOpen)}
-              className="flex-1 py-2 px-4 bg-danger text-white font-semibold rounded-md hover:bg-red-600"
+              className="flex-1 py-2 px-4 bg-danger text-white font-semibold rounded-2xl hover:bg-red-600"
             >
               Cancel
             </button>
@@ -771,7 +820,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                 className="fixed inset-0 flex items-center text-white justify-center z-50 bg-primary bg-opacity-70"
               >
                 <div
-                  className="bg-tertiary lg:w-1/2 rounded-lg pt-2 px-6 shadow-md"
+                  className="bg-tertiary lg:w-[30%] rounded-lg pt-2 px-6 shadow-md"
                   style={{ maxHeight: 'calc(100vh - 180px)' }}
                 >
                   <div className="flex flex-row justify-between">
@@ -832,20 +881,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   </div>
 )};
 
-const OrderStep: React.FC<{ onNext: () => void }> = ({ onNext }) => (
-  <div>
-    <h4 className="text-title-sm mb-4 font-semibold text-white">Place Order</h4>
-    <p className="text-white">Placing order...</p>
-    <button
-      onClick={onNext}
-      className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
-    >
-      Proceed
-    </button>
-  </div>
-);
-
-const OrderCompletedStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep }) => {
+const OrderStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep }) => {
   const navigate = useNavigate();
   const goHome = () => {
   // navigate('/dashboard');
@@ -854,11 +890,17 @@ const OrderCompletedStep: React.FC<{ goToStep: (step: number) => void }> = ({ go
 
   return (
   <div>
-    <h4 className="text-title-sm mb-4 font-semibold text-white">Order Completed</h4>
-    <p className="text-white mb-2">Your order has been completed successfully.</p>
-    <button className='p-2 text-white rounded-full bg-secondary' onClick={goHome}>Go home</button>
+    <h4 className="text-title-sm mb-4 font-semibold text-white">Place Order</h4>
+    <p className="text-white mb-2">Your order has been placed successfully.</p>
+    <button
+      onClick={goHome}
+      className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
+    >
+      Go home
+    </button>
   </div>
 )};
+
 
 // Main Component
 const Convert: React.FC = () => {
@@ -905,14 +947,15 @@ return (
       {currentStep === 1 && <OfferingsStep offerings={offerings} onNext={handleNextStep} onSelectOffering={handleSelectOffering}/>}
       {currentStep === 2 && <KycStep selectedOffering={selectedOffering} onNext={handleNextStep} />}
       {currentStep === 3 && <QuoteStep onNext={handleNextStep} selectedOffering={selectedOffering}/>}
-      {currentStep === 4 && <OrderStep onNext={handleNextStep} />}
-      {currentStep === 5 && <OrderCompletedStep goToStep={goToStep}/>}
+      {currentStep === 4 && <OrderStep goToStep={goToStep}/>}
   </div>
   </>
   );
 };
 
 export default Convert;
+
+
 
 
 

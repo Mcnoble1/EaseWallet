@@ -85,7 +85,7 @@ const SignIn = () => {
 
   return (
     <>
-    <div className="h-screen w-full text-white bg-[#16161A] px-10 lg:px-20 flex justify-center items-center">
+    <div className="h-screen w-full text-white bg-[#16161A] px-10 lg:px-20 flex justify-center items-center lg:block">
       <div className="flex flex-wrap items-center">
         <div className="w-full xl:w-3/5"> 
           <div className="">
@@ -96,7 +96,7 @@ const SignIn = () => {
             <h2 className="mb-1 text-2xl font-bold text-white dark:text-white sm:text-title-xl2">
               Welcome Back
             </h2>
-            <span className="mb-5 block text-white font-medium">Enter your Email and Password to sign in</span>
+            <span className="mb-5 block text-white font-medium">Enter your portable DID to sign in</span>
 
 
             <form onSubmit={handleSignIn} className='w-[100%] lg:w-[80%]'>

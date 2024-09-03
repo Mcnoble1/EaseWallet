@@ -1,6 +1,5 @@
 import { lazy } from 'react';
 
-const Send = lazy(() => import('../pages/Payments/Send'));
 const Transactions = lazy(() => import('../pages/Transactions'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
@@ -23,11 +22,6 @@ const coreRoutes = [
     path: '/transactions',
     title: 'Transactions',
     component: Transactions,
-  },
-  {
-    path: '/payments/send',
-    title: 'Send',
-    component: Send,
   },
   {
     path: '/payments/convert',

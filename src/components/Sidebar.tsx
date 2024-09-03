@@ -184,20 +184,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 'bg-secondary'
                               }`}
                             >
-                              Convert
-                            </NavLink>
-                          </li>
-                          
-                          <li>
-                            <NavLink
-                              to="/payments/send"
-                              className={`group relative flex items-center gap-2.5 rounded-md py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-secondary ${
-                                (pathname === '/payments' ||
-                                  pathname.includes('send')) &&
-                                'bg-secondary'
-                              }`}
-                            >
-                              Transfer
+                              Send
                             </NavLink>
                           </li>
                         </ul>
