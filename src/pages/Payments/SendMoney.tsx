@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import Breadcrumb from '../../components/Breadcrumb';
-import AllCategories from '../../components/AllCategories';
+import SendMoney from '../../components/SendMoney';
 import 'react-toastify/dist/ReactToastify.css';
 import '../signin.css';
 
@@ -46,7 +46,7 @@ const Categories: React.FC = () => {
               </div>
 
               <div className="w-full">
-                 <AllCategories />
+                 <SendMoney />
               </div>
               </div>
           </main>

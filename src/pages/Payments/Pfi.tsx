@@ -13,6 +13,7 @@ interface Review {
   review: string;
   name: string;
   pfi: string;
+  transaction: string;
 }
 
 const PFIs = [
@@ -57,10 +58,8 @@ const Pfi = () => {
   useEffect(() => {
     // Get all reviews from localStorage
     const allReviews = JSON.parse(localStorage.getItem("reviews") || "[]");
-    console.log(allReviews);
     // Filter reviews where the pfi matches the did from the URL params
     const pfiReviews = allReviews.filter((review: Review) => review.pfi === did);
-    console.log(pfiReviews);
     // Update the state with the filtered reviews
     setReviews(pfiReviews);
   }, [did]); // Re-run the effect when `did` changes

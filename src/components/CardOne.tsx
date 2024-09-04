@@ -41,7 +41,9 @@ const CardOne = () => {
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col justify-between">
-              <p className="text-white text-lg font-bold cursor-pointer" onClick={() => handleCardClick(pfi.did)}>{pfi.name}</p>
+              <div>
+                <p className="text-white text-lg font-bold cursor-pointer" onClick={() => handleCardClick(pfi.did)}>{pfi.name} </p>
+              </div>
               <span
                 className="mt-2 text-white underline cursor-pointer"
                 style={{ textAlign: 'left' }}
@@ -50,8 +52,9 @@ const CardOne = () => {
                 See Offerings
               </span>
             </div>
-            <div className={`flex h-11.5 w-11.5 items-center justify-center rounded bg-white/80`}>
+            <div className={`flex h-11.5 w-11.5 text-lg font-bold items-center justify-center rounded bg-white`}>
               <FontAwesomeIcon icon={pfi.icon} style={{ color: pfi.backgroundColor }} />
+              {/* <p style={{ color: pfi.backgroundColor }}>5<span className="text-yellow text">★</span></p> */}
             </div>
           </div>
 

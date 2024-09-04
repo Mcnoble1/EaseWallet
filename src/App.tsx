@@ -5,7 +5,7 @@ import { TbdexHttpClient } from '@tbdex/http-client';
 import { PFIs } from './utils/helpers';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import Convert from './pages/Payments/Convert';
+import SendMoney from './pages/Payments/SendMoney';
 import Pfi from './pages/Payments/Pfi';
 import Transactions from './pages/Transactions';
 import SignIn from './pages/SignIn';
@@ -58,7 +58,7 @@ function App() {
         <Route path="/signin/forgot-password" element={<ForgotPassword />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/payments/convert" element={<Convert />} />
+        <Route path="/payments/send" element={<SendMoney />} />
         <Route path="/payments/pfi/:did" element={<Pfi />} />
         <Route element={<DefaultLayout />}>
           <Route element={<Dashboard />} />

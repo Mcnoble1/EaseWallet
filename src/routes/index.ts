@@ -3,7 +3,7 @@ import { lazy } from 'react';
 const Transactions = lazy(() => import('../pages/Transactions'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
-const Convert = lazy(() => import('../pages/Payments/Convert'));
+const SendMoney = lazy(() => import('../pages/Payments/SendMoney'));
 const Pfi = lazy(() => import('../pages/Payments/Pfi'));
 const Profile = lazy(() => import('../pages/Profile'));
 
@@ -24,9 +24,9 @@ const coreRoutes = [
     component: Transactions,
   },
   {
-    path: '/payments/convert',
-    title: 'Convert',
-    component: Convert,
+    path: '/payments/send',
+    title: 'SendMoney',
+    component: SendMoney,
   },
   {
     path: '/payments/pfi/:did',

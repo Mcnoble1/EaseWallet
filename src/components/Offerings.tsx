@@ -63,6 +63,11 @@ const Offerings = ({ pfiDid }) => {
               <p>Settlement Time</p>
               <p>{formatTime(offering.data.payout.methods[0].estimatedSettlementTime)}</p>
             </div>
+
+            <div className='flex text-sm justify-between'>
+              <p>Trades: 12</p>
+              <p>Completion rate: 100%</p>
+            </div>
           </div>
           // <button className="bg-primary text-white rounded-lg p-2 mt-4">Exchange</button>
         ))}
@@ -72,5 +77,16 @@ const Offerings = ({ pfiDid }) => {
 }
 
 export default Offerings
+
+
+
+
+
+
+
+
+
+
+
 
 

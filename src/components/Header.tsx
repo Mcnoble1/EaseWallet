@@ -59,11 +59,14 @@ const Header = (props: {
           {/* <!-- Hamburger Toggle BTN --> */}
 
           <Link className="block flex-shrink-0 lg:hidden" to="/">
-            <img src={Logo} alt="Logo" height={40} width={40}/>
+            {/* <img src={Logo} alt="Logo" height={40} width={40}/> */}
+            {/* <div className='text-[#ffec19] text-2xl font-bold flex items-center mr-3'>
+            Ease
+          </div>  */}
           </Link>
         </div>
 
-        <div className="hidden text-xl text-[#ffec19] font-bold sm:block flex flex-row justify-center">
+        <div className="text-xl text-[#ffec19] font-bold sm:block flex flex-row justify-center">
           Ease
         </div>
 

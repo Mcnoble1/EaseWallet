@@ -16,6 +16,14 @@ interface Transaction {
   status: string;
 }
 
+interface  Review {
+  pfi: string;
+  name: string;
+  rating: number;
+  review: string;
+  transactionId: string;
+}
+
 const TransactionsTable: React.FC = ({ onClick }) => {
   // const { transactions } = useTransactionContext();
   const transactions = localStorage.getItem('transactions') ? JSON.parse(localStorage.getItem('transactions') || '') : [];
@@ -28,9 +36,15 @@ const TransactionsTable: React.FC = ({ onClick }) => {
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const popup = useRef<HTMLDivElement | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    const storedReviews = JSON.parse(localStorage.getItem('reviews') || '[]');
+    setReviews(storedReviews);
+  }, []);
 
   const toggleSidebar = (transactionId: string) => {
-    const selectedTransaction = transactions.find(transaction => transaction.id === transactionId);
+    const selectedTransaction = transactions.find((transaction: any) => transaction.id === transactionId);
     // console.log('Selected Transaction:', selectedTransaction);
     setSelectedTransaction([selectedTransaction]);
     setIsSidebarOpen(!isSidebarOpen);
@@ -38,19 +52,20 @@ const TransactionsTable: React.FC = ({ onClick }) => {
   };
 
   const handleReviewSubmit = (rating: number, review: string) => {
-    const reviews = JSON.parse(localStorage.getItem('reviews') || '[]');
     const newReview = {
       pfi: selectedTransaction[0]?.pfiDid,
       name: selectedTransaction[0].from,
       rating,
       review,
+      transactionId: selectedTransaction[0].id
     };
-    reviews.push(newReview);
-    localStorage.setItem('reviews', JSON.stringify(reviews));
-    setIsReviewOpen(false);
+    const updatedReviews = [...reviews, newReview];
+      setReviews(updatedReviews);
+      localStorage.setItem('reviews', JSON.stringify(updatedReviews));
+      setIsReviewOpen(false);
   };
 
-  const formatTime = (datestring) => {
+  const formatTime = (datestring: string) => {
     const date = new Date(datestring);
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -121,7 +136,10 @@ const TransactionsTable: React.FC = ({ onClick }) => {
              </thead>
              <tbody>
                {/* Table body */}
-               {transactions.map((transaction, index) => (
+               {transactions.map((transaction, index) => {
+                  const review = reviews.find(review => review.transactionId === transaction.id);
+
+                  return (
                  <tr key={transaction.id} onClick={() => toggleSidebar(transaction.id)} className={`border-b border-strokedark ${index === 0 ? 'rounded-t-sm' : ''}`}>
                    <td className="p-2.5 xl:p-5">{formatDatetime(transaction.createdTime)}</td>
                    <td className="p-2.5 xl:p-5">Outgoing Payment</td>
@@ -137,7 +155,8 @@ const TransactionsTable: React.FC = ({ onClick }) => {
                      </div>
                    </td>
                  </tr>
-               ))}
+                  );
+               })}
              </tbody>
            </table>
          </div>
@@ -145,13 +164,15 @@ const TransactionsTable: React.FC = ({ onClick }) => {
          <div className="flex justify-center items-center h-40">
            <p className="text-white">No transactions found</p>
          </div>
-       )
-      }
+       )}
       </div>
 
       {isSidebarOpen && (
   <div className="fixed right-0 top-0 h-screen borde w-full lg:w-[25%] z-9999 bg-primary text-white shadow-lg">
-    {selectedTransaction && selectedTransaction.map((transaction, index) => (
+    {selectedTransaction && selectedTransaction.map((transaction, index) => {
+       const review = reviews.find(review => review.transactionId === transaction.id);
+
+      return (
       <div className="h-screen p-5 flex flex-col overflow-y-auto">
         <div className="flex justify-end">
           <FontAwesomeIcon 
@@ -208,79 +229,104 @@ const TransactionsTable: React.FC = ({ onClick }) => {
             <p className="text-lg font-semibold">Transaction timeline</p>
             <FontAwesomeIcon icon={showTransactionTimeline ? faCaretUp : faCaretDown} className="text-gray-400" />
           </div>
-          {showTransactionTimeline && (
-            <div className="mt-2">
-              <div className="relative">
-                {/* Vertical line for timeline */}
-                <div className="absolute left-4 top-0 h-full border-l-2 border-gray-600"></div>
-                {/* Timeline events */}
-                <div className="relative pl-8">
-                  <div className="mb-2 flex items-center">
-                    <div className="h-2 w-2 bg-green rounded-full"></div>
-                    <div>
-                      <p className="ml-4 text-bodydark text-sm">Requested for Quote</p>
-                      <p className="ml-4 text-sm">{formatTime(transaction.rfqTime)}</p>
+            {showTransactionTimeline && (
+                  <div className="mt-2">
+                    <div className="relative">
+                      <div className="absolute left-4 top-0 h-full border-l-2 border-gray-600"></div>
+                      <div className="relative pl-8">
+                        {transaction.rfqTime && (
+                          <div className="mb-2 flex items-center">
+                            <div className="h-2 w-2 bg-green rounded-full"></div>
+                            <div>
+                              <p className="ml-4 text-bodydark text-sm">Requested for Quote</p>
+                              <p className="ml-4 text-sm">{formatTime(transaction.rfqTime)}</p>
+                            </div>
+                          </div>
+                        )}
+                        {transaction.quoteTime && (
+                          <div className="mb-2 flex items-center">
+                            <div className="h-2 w-2 bg-green rounded-full"></div>
+                            <div>
+                              <p className="ml-4 text-bodydark text-sm">Quote Generated</p>
+                              <p className="ml-4 text-sm">{formatTime(transaction.quoteTime)}</p>
+                            </div>
+                          </div>
+                        )}
+                        {transaction.orderTime && (
+                          <div className="mb-2 flex items-center">
+                            <div className="h-2 w-2 bg-green rounded-full"></div>
+                            <div>
+                              <p className="ml-4 text-bodydark text-sm">Order Placed</p>
+                              <p className="ml-4 text-sm">{formatTime(transaction.orderTime)}</p>
+                            </div>
+                          </div>
+                        )}
+                        {transaction.status && (
+                          <div className="mb-2 flex items-center">
+                            <div className="h-2 w-2 bg-green rounded-full"></div>
+                            <div>
+                              <p className="ml-4 text-bodydark text-sm">Order Status</p>
+                              <p className="ml-4 text-sm">{transaction.status}</p>
+                            </div>
+                          </div>
+                        )}
+                        {transaction.closeTime && (
+                          <div className="mb-2 flex items-center">
+                            <div className="h-2 w-2 bg-green rounded-full"></div>
+                            <div>
+                              <p className="ml-4 text-bodydark text-sm">Order Completed</p>
+                              <p className="ml-4 text-sm">{formatTime(transaction.closeTime)}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="mb-2 flex items-center">
-                    <div className="h-2 w-2 bg-green rounded-full"></div>
-                    <div>
-                    <p className="ml-4 text-bodydark text-sm">Quote Generated</p>
-                      <p className="ml-4 text-sm">{formatTime(transaction.quoteTime)}</p>
-                    </div>
-                  </div>
-                  <div className="mb-2 flex items-center">
-                    <div className="h-2 w-2 bg-green rounded-full"></div>
-                    <div>
-                    <p className="ml-4 text-bodydark text-sm">Order Placed</p>
-                      <p className="ml-4 text-sm">{formatTime(transaction.orderTime)}</p>
-                    </div>
-                  </div>
-                  <div className="mb-2 flex items-center">
-                    <div className="h-2 w-2 bg-green rounded-full"></div>
-                    <div>
-                    <p className="ml-4 text-bodydark text-sm">Order Status</p>
-                      <p className="ml-4 text-sm">{transaction.status}</p>
-                    </div>
-                  </div>
-                  <div className="mb-2 flex items-center">
-                    <div className="h-2 w-2 bg-green rounded-full"></div>
-                    <div>
-                    <p className="ml-4 text-bodydark text-sm">Order Completed</p>
-                      <p className="ml-4 text-sm">{formatTime(transaction.closeTime)}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+                )}
         </div>
 
-        {/* Rating Button */}
-        <button 
-          onClick={() => setIsReviewOpen(true)}
-          className="bg-secondary hover:bg-secondary/50 text-white py-2 rounded-2xl mt-auto flex items-center justify-center transition duration-150">
-          <FontAwesomeIcon icon={faStar} className="mr-2 text-yellow" />
-          Rate this Transaction
-        </button>
+        {transaction.status === "completed" && (
+          <div>
+              {!review ? (
+                <button 
+                  onClick={() => setIsReviewOpen(true)}
+                  className="bg-secondary hover:bg-secondary/50 text-white py-2 w-full rounded-2xl mt-auto flex items-center justify-center transition duration-150">
+                  <FontAwesomeIcon icon={faStar} className="mr-2 text-yellow" />
+                  Rate this Transaction
+                </button>
+              ) : (
+                <div className="my-4 p-4 bg-primary rounded-md">
+                  <p className="text-lg font-semibold mb-2">Your Rating</p>
+                  <div className="flex items-center">
+                    {/* Render stars based on the rating */}
+                    {[...Array(review.rating)].map((_, i) => (
+                      <FontAwesomeIcon key={i} icon={faStar} className="text-yellow h-4 w-4 mr-1" />
+                    ))}
+                  </div>
+                  <p className="mt-2">{review.review}</p>
+                </div>
+              )}
+            </div>
+          )}
 
-         {/* Review and Rating Form */}
+        
+
          {isReviewOpen && (
           <div className="fixed bottom-0 right-0 w-full lg:w-[25%] p-4 bg-primary shadow-lg transform transition-transform ease-in duration-300">
             <ReviewAndRating onSubmit={handleReviewSubmit} onClose={() => setIsReviewOpen(false)}/>
           </div>
         )}
       </div>
-    ))}
+    )}
+  )}
   </div>
-)}
+  )}
 
     </>
   );
 };
 
 export default TransactionsTable;
-
 
 
 

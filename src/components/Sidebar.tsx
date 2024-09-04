@@ -68,7 +68,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <NavLink to="/dashboard" className="flex flex-row justify-between">
-          <img src={Logo} alt="Logo" height={50} width={50} className='mr-5' />
+          {/* <img src={Logo} alt="Logo" height={50} width={50} className='mr-5' /> */}
 
          <div className='text-[#ffec19] text-2xl font-bold flex items-center mr-3'>
             Ease
@@ -177,10 +177,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
                             <NavLink
-                              to="/payments/convert"
+                              to="/payments/send"
                               className={`group relative flex items-center gap-2.5 rounded-md py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-secondary ${
                                 (pathname === '/payments' ||
-                                  pathname.includes('convert')) &&
+                                  pathname.includes('send')) &&
                                 'bg-secondary'
                               }`}
                             >

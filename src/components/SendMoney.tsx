@@ -7,7 +7,7 @@ import { PresentationExchange } from "@web5/credentials";
 import { useNavigate } from 'react-router-dom';
 import { Close, Order, Rfq, TbdexHttpClient } from '@tbdex/http-client'
 import { useTransactionContext } from './TransactionContext';
-
+import Loading from './Loading'
 const steps = [
   'Currency Input',
   'See Offerings',
@@ -173,7 +173,7 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
           <div key={index} onClick={() => handleOfferingClick(offering)} className="bg-tertiary text-white rounded-lg shadow-md p-3 cursor-pointer hover:bg-opacity-100">
             <div className='flex justify-between'>
               <h5 className="text-md font-semibold mb-2">
-                {PFIs.find((pfi) => pfi.did === offering.metadata.from)?.name}
+                {PFIs.find((pfi) => pfi.did === offering.metadata.from)?.name} 5<span className="text-yellow text">★</span>
               </h5>
               <p className="text-sm mb-2">{offering.data.payin.currencyCode} to {offering.data.payout.currencyCode}</p>
             </div>
@@ -200,6 +200,12 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
               <p>Settlement Time</p>
               <p>{formatTime(offering.data.payout.methods[0].estimatedSettlementTime)}</p>
             </div>
+
+            <div className='flex text-sm justify-between'>
+              <p>Trades: 12</p>
+              <p>Completion rate: 100%</p>
+            </div>
+
           </div>
         ))}
       </div>
@@ -298,12 +304,35 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const did = localStorage.getItem('userDid');
   const [payinMethodDetails, setPayinMethodDetails] = useState(null);
   const [payoutDetails, setPayoutDetails] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  // Handle input changes with namespaced data
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prevData) => ({ ...prevData, [name]: value }));
-  // };
+  const validateField = (name, value) => {
+    let error = '';
+
+    // Validation logic
+    if (!value) {
+      error = 'This field is required';
+    } else {
+      if (name.includes('Number') || name.includes('amount') || name.includes('sort')) {
+        // Validate account number (numbers only)
+        if (!/^\d+$/.test(value)) {
+          error = `${name} must contain only numbers`;
+        }
+      } else if (name.includes('address')) {
+        // Validate address (letters and numbers only)
+        if (!/^[a-zA-Z0-9\s]+$/.test(value)) {
+          error = 'Address must contain only letters and numbers';
+        }
+      }
+    }
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: error,
+    }));
+
+    return error === ''; // Returns true if valid, false if invalid
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -322,13 +351,14 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       [name]: value,
       fee,
     }));
+
+    validateField(name, value); // Validate the input on change
   };
 
   const handlePayinMethodChange = (event) => {
     const selectedMethod = event.target.value;
     const methodDetails = selectedOffering?.data?.payin?.methods.find(method => method.kind === selectedMethod);
 
-    // If methodDetails or requiredPaymentDetails is empty, set to empty object
     setPayinMethodDetails(methodDetails?.requiredPaymentDetails?.properties ? methodDetails : {});
 
     setFormData((prevData) => ({
@@ -342,7 +372,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     const selectedMethod = event.target.value;
     const methodDetails = selectedOffering?.data?.payout?.methods.find(method => method.kind === selectedMethod);
 
-    // Handle empty payout details similarly
     setPayoutDetails(methodDetails?.requiredPaymentDetails?.properties ? methodDetails : {});
 
     setFormData((prevData) => ({
@@ -352,7 +381,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     }));
   };
 
-  // Handle changes specific to payinDetails and payoutDetails separately
   const handlePayinDetailsChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -362,6 +390,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         [name]: value,
       },
     }));
+
+    validateField(name, value); // Validate the input on change
   };
 
   const handlePayoutDetailsChange = (e) => {
@@ -373,17 +403,34 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         [name]: value,
       },
     }));
+
+    validateField(name, value); // Validate the input on change
+  };
+
+  const isFormValid = () => {
+    const requiredFields = ['amount', 'payinMethod', 'payoutMethod', ...Object.keys(formData.payinDetails), ...Object.keys(formData.payoutDetails)];
+    let valid = true;
+
+    requiredFields.forEach((field) => {
+      if (!validateField(field, formData[field] || formData.payinDetails[field] || formData.payoutDetails[field])) {
+        valid = false;
+      }
+    });
+
+    return valid;
   };
 
   const requestQuote = async () => {
-    setLoading(true);
-    // Call getQuote function here with formData details
-    const result = await createExchange(selectedOffering, formData.amount, formData.payinMethod, formData.payinDetails, formData.payoutMethod, formData.payoutDetails,);
-    const exchanges = await fetchExchanges(selectedOffering.metadata.from)
-    // console.log('Final Exchanges:', exchanges)
-    setLoading(false);
-    setStep(2);
-    pollExchanges();
+    if (isFormValid()) {
+      setLoading(true);
+      const result = await createExchange(selectedOffering, formData.amount, formData.payinMethod, formData.payinDetails, formData.payoutMethod, formData.payoutDetails,);
+      const exchanges = await fetchExchanges(selectedOffering.metadata.from)
+      setLoading(false);
+      setStep(2);
+      pollExchanges();
+    } else {
+      toast.info('Please fill all fields');
+    }    
   };
 
   const handleOrder = () => {
@@ -460,10 +507,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       console.error('Failed to create exchange:', error);
     }
   }
-
-  // createExchange(selectedOffering, 100, {
-  //   address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-  // });
 
   const generateExchangeStatusValues = (exchangeMessage) => {
     if (exchangeMessage instanceof Close) {
@@ -634,15 +677,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const pollExchanges = () => {
     const fetchAllExchanges = async () => {
       console.log('Polling exchanges');
-      // const allExchanges = []
       try {
           const exchanges = await fetchExchanges(selectedOffering.metadata.from);
-          // allExchanges.push(...exchanges)
-        // setTransactions(exchanges);
-        // localStorage.setItem('transactions', JSON.stringify(exchanges));
-        // console.log('Exchanges from Polling:', exchanges);
-        // updateExchanges(exchanges.reverse());
-        updateExchanges(exchanges);
+        updateExchanges(exchanges.reverse());
       } catch (error) {
         console.error('Failed to fetch exchanges:', error);
       }
@@ -674,6 +711,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                 required
                 className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
               />
+               {errors.amount && <p className="text-danger">{errors.amount}</p>}
             </div>
 
               <div>
@@ -683,6 +721,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                   name="fee"
                   value={formData.fee}
                   disabled
+                  required
                   className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
                 />
               </div>
@@ -703,6 +742,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                   </option>
                 ))}
               </select>
+              {errors.payinMethod && <p className="text-danger">{errors.payinMethod}</p>}
               {payinMethodDetails && Object.keys(payinMethodDetails.requiredPaymentDetails?.properties || {}).length > 0 && (
                   <div className="mt-3">
                     {Object.keys(payinMethodDetails.requiredPaymentDetails.properties).map((key, index) => (
@@ -714,8 +754,10 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                           value={formData.payinDetails[key] || ''}
                           onChange={handlePayinDetailsChange}
                           required
+                          placeholder='12345678'
                           className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
                         />
+                        {errors[key] && <p className="text-danger">{errors[key]}</p>}
                       </div>
                     ))}
                   </div>
@@ -738,6 +780,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                   </option>
                 ))}
               </select>
+              {errors.payoutMethod && <p className="text-danger">{errors.payoutMethod}</p>}
               {payoutDetails && Object.keys(payoutDetails.requiredPaymentDetails?.properties || {}).length > 0 && (
                   <div className="mt-3">
                     {Object.keys(payoutDetails.requiredPaymentDetails.properties).map((key, index) => (
@@ -749,8 +792,10 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
                           value={formData.payoutDetails[key] || ''}
                           onChange={handlePayoutDetailsChange}
                           required
+                          placeholder='0987654'
                           className="w-full text-white rounded-lg border-[1.5px] border-stroke bg-tertiary py-5 px-5 font-medium outline-none"
                         />
+                        {errors[key] && <p className="text-danger">{errors[key]}</p>}
                       </div>
                     ))}
                   </div>
@@ -764,8 +809,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
             disabled={loading}
             className="mr-5 mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-secondary py-4 px-10 text-center font-medium text-white hover:bg-opacity-90"
           >
-            {loading ? <span>Requesting...</span> : 'Request Quote'}
+           Request Quote 
           </button>
+          {loading && <Loading />}
         </form>
       </div>
       )}
@@ -903,7 +949,7 @@ const OrderStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep })
 
 
 // Main Component
-const Convert: React.FC = () => {
+const SendMoney: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [offerings, setOfferings] = useState<any[]>([]);
 const [selectedOffering, setSelectedOffering] = useState<any>(null);
@@ -953,7 +999,7 @@ return (
   );
 };
 
-export default Convert;
+export default SendMoney;
 
 
 
