@@ -1,27 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Logo from '../images/logo/logo.png';
 import Object from '../images/logo/objects.svg';
 import { toast } from 'react-toastify'; 
+import { DidDht } from '@web5/dids';
 import 'react-toastify/dist/ReactToastify.css'; 
 import './signin.css';
 
 
 const SignUp = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); 
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [username, setUsername] = useState('');
+  const [did, setDid] = useState('');
+  const [showDid, setShowDid] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
     e.preventDefault(); 
     // Prevent the default form submission behavior
   
-    if (!email || !password) {
+    if (!username || !did) {
       // Display an error message or prevent the form submission
-      toast.error('Please fill in both email and password fields.', {
+      toast.error('Please fill in both username and did fields.', {
         position: toast.POSITION.TOP_RIGHT,
         autoClose: 4000, // Adjust the duration as needed
       });      
@@ -29,34 +30,51 @@ const SignUp = () => {
     }
   
     try {
-      setLoading(true); // Set loading state to true
+      setLoginLoading(true); // Set loading state to true
+      // const bearerDid = BearerDid.import(portableDid, InMemoryKeyManager())
+      // console.log(portableDid);
+      // const did = didDht.uri;
+      // console.log(did);
+      // const didDocument = JSON.stringify(didDht.document);
+      // console.log(didDocument);
 
-      const url = "https://madad.onrender.com/api/admin/signup";
-  
-      const data = new URLSearchParams();
-      data.append("email", email);
-      data.append("password", password);
-  
-      const config = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      };
-  
-      const response = await axios.post(url, data, config);
-      const { data: { token } } = response; 
-      console.log(response)
-      setLoading(false); 
-
-      // You can store the token in localStorage, sessionStorage, or a state management solution like Redux, depending on your needs
-      localStorage.setItem('token', token); 
-
-      // Redirect to the dashboard or handle success as needed
-      navigate('/signin');
+      // navigate('/dashboard');
     } catch (error) {
-      toast.error('Enter a Valid Email', {
+      toast.error('Enter a valid portableDID', {
         position: toast.POSITION.TOP_RIGHT,
         autoClose: 4000, // Adjust the duration as needed
+      });   
+      setLoginLoading(false); 
+    }
+  };
+
+  const generateDid = async (e) => {
+    if (!username) {
+      toast.error('Username is required', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 3000,
+      });      
+      return;
+    }
+    e.preventDefault(); 
+    try {
+      setLoading(true);
+      // val bearerDid = BearerDid.import(portableDid, InMemoryKeyManager())
+      const didDht = await DidDht.create({ publish: true });
+      console.log(didDht);
+      const portableDid = await didDht.export()
+      console.log(portableDid);
+      const did = didDht.uri;
+      console.log(did);
+      const didDocument = JSON.stringify(didDht.document);
+      console.log(didDocument);
+      console.log(username);
+
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error('Enter a valid Username', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 2000,
       });   
       setLoading(false); 
     }
@@ -75,24 +93,21 @@ const SignUp = () => {
               <h2 className="mb-1 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                 Sign Up
               </h2>
-              <span className="mb-9 block font-medium">Enter your Email and Password to sign up</span>
-
+              <span className="mb-9 block font-medium">Enter your Portable DID to sign up</span>
 
               <form onSubmit={handleSignUp}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Email address
+                    Username
                   </label>
-                  <div className={`relative ${email ? 'bg-light-blue' : ''}`}>
+                  <div className={`relative ${username ? 'bg-light-blue' : ''}`}>
                     <input
-                      type="email"
-                      placeholder="Enter email address"
-                      // className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                      value={email}
-                      className={`w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus-border-primary ${password ? 'bg-light-blue' : ''}`}
-
+                      type="text"
+                      placeholder="Noble"
+                      value={username}
+                      className={`w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus-border-primary ${username ? 'bg-light-blue' : ''}`}
                       required
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -117,25 +132,22 @@ const SignUp = () => {
 
                 <div className="mb-6">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Password
+                    PortableDID
                   </label>
-                  <div className={`relative ${password ? 'bg-light-blue' : ''}`}>
+                  <div className={`relative ${did ? 'bg-light-blue' : ''}`}>
                     <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter password"
-                      // className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                      value={password}
-                      className={`w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus-border-primary ${password ? 'bg-light-blue' : ''}`}
-
-                      required
-                      onChange={(e) => setPassword(e.target.value)}
+                      type={showDid ? 'text' : 'did'}
+                      placeholder="Enter did"
+                      value={did}
+                      className={`w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus-border-primary ${did ? 'bg-light-blue' : ''}`}
+                      onChange={(e) => setDid(e.target.value)}
                     />
 
-<span
+                      <span
                         className="absolute right-4 top-4 cursor-pointer"
-                        onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+                        onClick={() => setShowDid(!showDid)} // Toggle did visibility
                       >
-                        {showPassword ? (
+                        {showDid ? (
                           <svg
                             className="fill-current"
                             width="22"
@@ -144,7 +156,7 @@ const SignUp = () => {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            {/* Replace with your eye icon when the password is visible */}
+                            {/* Replace with your eye icon when the did is visible */}
                             <svg
                                 width="22"
                                 height="22"
@@ -186,16 +198,27 @@ const SignUp = () => {
                   </div>
                 </div>
 
-              <div className="mb-5">
+              <div className="mb-5 flex justify-evenly">
               <button
                   type="submit"
                   onClick={handleSignUp}
-                  className={`w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 ${
+                  className={`w-2/5 cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 ${
+                    loading ? 'opacity-50 cursor-wait' : '' // Disable the button and change cursor when loading
+                  }`}
+                  disabled={loginLoading} // Disable the button when loading
+                >
+                  {loginLoading ? 'Signing Up...' : 'Sign Up'} {/* Change button text based on loading state */}
+                </button>
+
+                <button
+                  type="submit"
+                  onClick={generateDid}
+                  className={`w-2/5  cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 ${
                     loading ? 'opacity-50 cursor-wait' : '' // Disable the button and change cursor when loading
                   }`}
                   disabled={loading} // Disable the button when loading
                 >
-                  {loading ? 'Signing Up...' : 'Sign Up'} {/* Change button text based on loading state */}
+                  {loading ? 'Generating...' : 'Generate One'} {/* Change button text based on loading state */}
                 </button>
               </div>
               </form>

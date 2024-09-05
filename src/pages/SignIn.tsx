@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Object from '../images/logo/objects@2x.png';
 import { toast } from 'react-toastify';
+import { DidDht } from '@web5/dids';
 import 'react-toastify/dist/ReactToastify.css';
 import './signin.css';
 
