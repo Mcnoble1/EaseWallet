@@ -4,6 +4,8 @@ import Logo from '../images/logo/logo.png';
 import Object from '../images/logo/objects.svg';
 import { toast } from 'react-toastify'; 
 import { DidDht } from '@web5/dids';
+import { LocalKeyManager } from "@web5/crypto";
+import { AwsKeyManager } from "@web5/crypto-aws-kms";
 import 'react-toastify/dist/ReactToastify.css'; 
 import './signin.css';
 
@@ -15,6 +17,25 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
+
+  const initKeyManagement = async (env, portableDid) => {
+    // Determine which key manager to use based on the environment
+    let keyManager;
+    if (env === "production") {
+        keyManager = new AwsKeyManager();
+    } else {
+        keyManager = new LocalKeyManager();
+    }
+
+    // Initialize or load a DID
+    if (portableDid == null) {
+        // Create a new DID
+        return await DidDht.create(keyManager);
+    } else {
+        // Load existing DID
+        return await DidDht.import({portableDid, keyManager});
+    }
+}
 
   const handleSignUp = async (e) => {
     e.preventDefault(); 
@@ -31,14 +52,14 @@ const SignUp = () => {
   
     try {
       setLoginLoading(true); // Set loading state to true
-      // const bearerDid = BearerDid.import(portableDid, InMemoryKeyManager())
-      // console.log(portableDid);
-      // const did = didDht.uri;
-      // console.log(did);
-      // const didDocument = JSON.stringify(didDht.document);
-      // console.log(didDocument);
+      const bearerDid = BearerDid.import(did, InMemoryKeyManager())
+      console.log(portableDid);
+      const did = didDht.uri;
+      console.log(did);
+      const didDocument = JSON.stringify(didDht.document);
+      console.log(didDocument);
 
-      // navigate('/dashboard');
+      navigate('/dashboard');
     } catch (error) {
       toast.error('Enter a valid portableDID', {
         position: toast.POSITION.TOP_RIGHT,
