@@ -5,7 +5,6 @@ import Object from '../images/logo/objects.svg';
 import { toast } from 'react-toastify'; 
 import { DidDht } from '@web5/dids';
 import { LocalKeyManager } from "@web5/crypto";
-import { AwsKeyManager } from "@web5/crypto-aws-kms";
 import 'react-toastify/dist/ReactToastify.css'; 
 import './signin.css';
 
@@ -18,24 +17,24 @@ const SignUp = () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
 
-  const initKeyManagement = async (env, portableDid) => {
-    // Determine which key manager to use based on the environment
-    let keyManager;
-    if (env === "production") {
-        keyManager = new AwsKeyManager();
-    } else {
-        keyManager = new LocalKeyManager();
-    }
+//   const initKeyManagement = async (env, portableDid) => {
+//     // Determine which key manager to use based on the environment
+//     let keyManager;
+//     if (env === "production") {
+//         keyManager = new AwsKeyManager();
+//     } else {
+//         keyManager = new LocalKeyManager();
+//     }
 
-    // Initialize or load a DID
-    if (portableDid == null) {
-        // Create a new DID
-        return await DidDht.create(keyManager);
-    } else {
-        // Load existing DID
-        return await DidDht.import({portableDid, keyManager});
-    }
-}
+//     // Initialize or load a DID
+//     if (portableDid == null) {
+//         // Create a new DID
+//         return await DidDht.create(keyManager);
+//     } else {
+//         // Load existing DID
+//         return await DidDht.import({portableDid, keyManager});
+//     }
+// }
 
   const handleSignUp = async (e) => {
     e.preventDefault(); 
