@@ -1,18 +1,18 @@
 {
-  "name": "getmadad",
+  "name": "easewallet",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://getmadad.com",
+  "homepage": "https://easewallet.netlify.app",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "author": {
-    "name": "getmadad",
-    "email": "hello@tailadmin.com",
-    "url": "https://getmadad.com"
+    "name": "idowu festus",
+    "email": "idowufestus@gmail.com",
+    "url": "https://easewallet.netlify.app"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",
