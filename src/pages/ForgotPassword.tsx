@@ -1,61 +1,15 @@
 import React, { useState } from 'react';
+import { useAuthActions } from "@convex-dev/auth/react";
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import LogoDark from '../images/logo/logo-dark.svg';
-import Logo from '../images/logo/logo.svg';
 import Object from '../images/logo/objects.svg';
 import { toast } from 'react-toastify'; 
 import 'react-toastify/dist/ReactToastify.css'; 
 
-const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false); // Add loading state
-  const navigate = useNavigate();
-
-  const handleSignIn = async (e) => {
-    e.preventDefault(); 
-    // Prevent the default form submission behavior
-  
-    if (!email) {
-      // Display an error message or prevent the form submission
-      toast.error('Please fill in your email address.', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 4000, // Adjust the duration as needed
-      });      
-      return;
-    }
-  
-    try {
-      setLoading(true); // Set loading state to true
-
-      const url = "https://madad.onrender.com/api/admin/forgot-password";
-  
-      const data = new URLSearchParams();
-      data.append("email", email);
-  
-      const config = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      };
-  
-      const response = await axios.post(url, data, config);
-
-      setLoading(false); 
-      toast.success('Email sent successfully', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 4000, // Adjust the duration as needed
-      }); 
-
-      // Redirect to the dashboard or handle success as needed
-    } catch (error) {
-      toast.error('Enter a valid Email', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 4000, // Adjust the duration as needed
-      });   
-      setLoading(false); 
-    }
-  };
+const PasswordReset = () => {
+  const { signIn } = useAuthActions();
+  const [step, setStep] = useState<"forgot" | { email: string }>("forgot");
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
 
   return (
     <>
@@ -63,17 +17,21 @@ const SignIn = () => {
         <div className="flex h-screen flex-wrap items-center">
           <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
-            {/* <Link className="mb-5.5 inline-block" to="/">
-                <img className="hidden dark:block" src={Logo} alt="Logo" />
-                <img className="dark:hidden" src={LogoDark} alt="Logo" />
-              </Link> */}
               <h2 className="mb-1 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                 Recover your password
               </h2>
               <span className="mb-9 block font-medium">Enter your Email to get your sign in details</span>
 
-
-              <form onSubmit={handleSignIn}>
+            {step === "forgot" ? (
+              <form 
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const formData = new FormData(event.currentTarget);
+                  void signIn("password", formData).then(() =>
+                    setStep({ email: formData.get("email") as string }),
+                  );
+                }}
+              >
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Email address
@@ -81,6 +39,7 @@ const SignIn = () => {
                   <div className="relative">
                     <input
                       type="email"
+                      name="email"
                       placeholder="Enter email address"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                       value={email}
@@ -108,16 +67,19 @@ const SignIn = () => {
                   </div>
                 </div>
 
+                <div>
+                  <input name="flow" type="hidden" value="reset" />
+                </div>
+
               <div className="mb-5">
               <button
                   type="submit"
-                  onClick={handleSignIn}
                   className={`w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 ${
-                    loading ? 'opacity-50 cursor-wait' : '' // Disable the button and change cursor when loading
+                    loading ? 'opacity-50 cursor-wait' : ''
                   }`}
-                  disabled={loading} // Disable the button when loading
+                  disabled={loading}
                 >
-                  {loading ? 'Submitting...' : 'Submit'} {/* Change button text based on loading state */}
+                  {loading ? 'Submitting...' : 'Send Code'} {/* Change button text based on loading state */}
                 </button>
               </div>
                
@@ -130,6 +92,24 @@ const SignIn = () => {
                   </p>
                 </div>
               </form>
+            ) : (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                void signIn("password", formData);
+              }}
+            >
+              <input name="code" placeholder="Code" type="text" />
+              <input name="newPassword" placeholder="New password" type="password" />
+              <input name="email" value={step.email} type="hidden" />
+              <input name="flow" value="reset-verification" type="hidden" />
+              <button type="submit">Continue</button>
+              <button type="button" onClick={() => setStep("signIn")}>
+                Cancel
+              </button>
+            </form>
+          )}
             </div>
           </div>
 
@@ -146,4 +126,7 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default PasswordReset;
+
+
+

@@ -1,14 +1,25 @@
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-// import UserOne from '../images/user/user-01.png';
-
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useNavigate } from 'react-router-dom';
 const DropdownUser = () => {
-
+  const { signOut } = useAuthActions();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
   const [user, setUser] = useState('');
+  const navigate = useNavigate();
+
+  const SignOut = () => {
+    () => void signOut();
+    navigate("/signin");
+  }
+
+  // const fetchUser = useQuery(api.users.getUser, { _id: userId });
+  const updateUser = useMutation(api.users.updateUser);
+  const deleteUser = useMutation(api.users.deleteUser);
 
   useEffect(() => {
     // Retrieve the email from local storage
@@ -46,18 +57,12 @@ const DropdownUser = () => {
 
   return (
     <div className="relative">
-      <Link
-
-        className="flex items-center gap-4"
-        to="/signin"
-      >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-white">
             {user}
           </span>
-          <span className="block text-xs">Logout</span>
+          <button onClick={SignOut} className="cursor-pointer text-xs p-1 bg-secondary rounded-lg">Logout</button>
         </span>
-      </Link>
     </div>
   );
 };

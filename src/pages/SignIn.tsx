@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuthActions } from "@convex-dev/auth/react";
 import Object from '../images/logo/objects@2x.png';
 import { toast } from 'react-toastify';
-import { DidDht } from '@web5/dids';
 import 'react-toastify/dist/ReactToastify.css';
 import './signin.css';
 
 
 const SignIn = () => {
+  const { signIn } = useAuthActions();
+  const [step, setStep] = useState<"signIn" | "signUp" | { email: string }>("signIn");
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,72 +18,14 @@ const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false); // State for Remember Me checkbox
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // When the component mounts, check localStorage for email and rememberMe values
-    const savedEmail = localStorage.getItem('email');
-    const savePassword = localStorage.getItem('pass');
-    const savedRememberMe = localStorage.getItem('rememberMe');
-
-    if (savedEmail && savedRememberMe === 'true') {
-      setEmail(savedEmail);
-      setPassword(savePassword);
-      setRememberMe(true);
-    }
-  }, []);
-
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-
-    if (!email || !password) {
-      toast.error('Please fill in both email and password fields', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 4000,
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const url = 'https://madad.onrender.com/api/admin/login';
-
-      const data = new URLSearchParams();
-      data.append('email', email);
-      data.append('password', password);
-
-      const config = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      };
-
-      const response = await axios.post(url, data, config);
-      const token = response.data.AccessToken;
-      setLoading(false);
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', email);
-      if (rememberMe) {
-        // If Remember Me is checked, save email and rememberMe in localStorage
-        localStorage.setItem('email', email);
-        localStorage.setItem('rememberMe', 'true');
-        localStorage.setItem('pass', password);
-      } else {
-        // If Remember Me is not checked, remove email and rememberMe from localStorage
-        localStorage.removeItem('email');
-        localStorage.removeItem('rememberMe');
-        localStorage.removeItem('pass');
-      }
-
+    const handleSignIn = async (e) => {  
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
+      void signIn("password-code", formData).then(() =>
+        setStep({ email: formData.get("email") as string }),
+      );
       navigate('/dashboard');
-    } catch (error) {
-      toast.error('Username or Password is incorrect', {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 4000,
-      });
-      setLoading(false);
     }
-  };
 
   return (
     <>
@@ -89,16 +33,12 @@ const SignIn = () => {
       <div className="flex flex-wrap items-center">
         <div className="w-full xl:w-3/5"> 
           <div className="">
-          {/* <Link className="mb-5 inline-block" to="/">
-              <img className="hidden dark:block" src={Logo} width={50} height={50} alt="Logo" />
-              <img className="dark:hidden" src={Logo} width={50} height={50} alt="Logo" />
-            </Link> */}
             <h2 className="mb-1 text-2xl font-bold text-white dark:text-white sm:text-title-xl2">
-              Welcome Back
+              EaseWallet
             </h2>
-            <span className="mb-5 block text-white font-medium">Enter your portable DID to sign in</span>
+            {/* <span className="mb-5 block text-white font-medium">Enter your portable DID to sign in</span> */}
 
-
+            {step === "signIn" || step === "signUp" ? (
             <form onSubmit={handleSignIn} className='w-[100%] lg:w-[80%]'>
               <div className="mb-4 ">
                 <label className="mb-2.5 block font-medium text-white dark:text-white">
@@ -106,8 +46,9 @@ const SignIn = () => {
                 </label>
                 <div className={`relative ${email ? 'bg-transparent' : ''}`}>
                   <input
+                    name='email'
                     type="email"
-                    placeholder="Enter email address"
+                    placeholder="Email address"
                     className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                     value={email}
                     required
@@ -134,12 +75,13 @@ const SignIn = () => {
                 </div>
               </div>
 
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="mb-2.5 block font-medium text-white dark:text-white">
                   Password
                 </label>
                 <div className={`relative ${password ? 'bg-transparent' : ''}`}>
                   <input
+                    name='password'
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter password"
                     className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
@@ -203,7 +145,11 @@ const SignIn = () => {
                 </div>
               </div>
 
-              <div className="mb-9">
+              <div>
+                <input name="flow" type="hidden" value={step} />
+              </div>
+
+              <div className="mb-4">
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -215,20 +161,27 @@ const SignIn = () => {
               </label>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-3">
             <button
                 type="submit"
-                onClick={handleSignIn}
+                // onClick={handleSignIn}
                 className={`w-full cursor-pointer rounded-lg border border-primary bg-secondary p-4 text-white transition hover:bg-opacity-90 ${
                   loading ? 'opacity-50 cursor-wait' : '' // Disable the button and change cursor when loading
                 }`}
-                disabled={loading} // Disable the button when loading
+                disabled={loading}
               >
-                {loading ? 'Signing In...' : 'Sign In'} {/* Change button text based on loading state */}
+                {/* {loading ? 'Signing In...' : 'Sign In'} */}
+                {step === "signIn" ? "Sign in" : "Sign up"}
               </button>
             </div>
-             
-
+              <p
+                className='text-center underline cursor-pointer'
+                onClick={() => {
+                  setStep(step === "signIn" ? "signUp" : "signIn");
+                }}
+              >
+                {step === "signIn" ? "Sign up instead" : "Sign in instead"}
+              </p>
               <div className="mb-9">
                 <p>
                   <Link to="forgot-password" className="">
@@ -237,8 +190,59 @@ const SignIn = () => {
                 </p>
               </div>
             </form>
+                ) : (
+                  <form
+                    className='w-[100%] lg:w-[80%]'
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      const formData = new FormData(event.currentTarget);
+                      void signIn("password-code", formData);
+                      navigate('/dashboard');
+                    }}
+                  >
+                    <div className='mb-5'>
+                      <label className="mb-2.5 block font-medium text-white dark:text-white">
+                        Enter the verification code sent to your Email
+                      </label>
+                      <div>
+                        <input
+                          name='code'
+                          type="text"
+                          placeholder="Code"
+                          className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                          required
+                          // onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <input name="email" value={step.email} type="hidden" />
+                    <input name="flow" value="email-verification" type="hidden" />
+                    <div className='flex gap-5'>
+                      <button
+                          type="submit"
+                          className={`w-full cursor-pointer rounded-lg border border-primary bg-secondary p-4 text-white transition hover:bg-opacity-90 ${
+                            loading ? 'opacity-50 cursor-wait' : ''
+                          }`}
+                          disabled={loading}
+                        >
+                          Continue                
+                      </button>
+
+                      <button
+                          type="button"
+                          onClick={() => setStep("signIn")}
+                          className={`w-full cursor-pointer rounded-lg border border-primary bg-danger p-4 text-white transition hover:bg-opacity-90 ${
+                            loading ? 'opacity-50 cursor-wait' : ''
+                          }`}
+                          disabled={loading}
+                        >
+                          Cancel                
+                      </button>
+                    </div>
+                  </form>
+                )}
+            </div>
           </div>
-        </div>
 
         <div className="hidden h-screen lg:block lg:w-2/5 bg-primary">
           <div className="absolute right-10">
