@@ -43,10 +43,13 @@ We’ve integrated a **rating and review system** that prompts users to rate PFI
 To clone the repository and run the project locally:
 
 ```bash
-git clone https://github.com/your-username/easewallet.git
+git clone https://github.com/mcnoble1/easewallet.git
 cd easewallet
 npm install
-npm start
+npm run dev
 ```
 
 Developed for the Africa Bitcoin Conference: TBD Hackathon.
+![abc](https://github.com/user-attachments/assets/a0429ece-1746-4ecd-9542-52410fe82ea5)
+![tbd](https://github.com/user-attachments/assets/8471902a-b579-4137-b2c6-92eea113c1f8)
+
