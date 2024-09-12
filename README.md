@@ -50,6 +50,9 @@ npm run dev
 ```
 
 Developed for the Africa Bitcoin Conference: TBD Hackathon.
-![abc](https://github.com/user-attachments/assets/a0429ece-1746-4ecd-9542-52410fe82ea5)
+
 ![tbd](https://github.com/user-attachments/assets/8471902a-b579-4137-b2c6-92eea113c1f8)
+
+![abc](https://github.com/user-attachments/assets/a0429ece-1746-4ecd-9542-52410fe82ea5)
+
 
