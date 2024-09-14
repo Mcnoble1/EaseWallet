@@ -1,12 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { AppContext } from '../utils/AppContext';
 import 'react-toastify/dist/ReactToastify.css'; 
 import { formatDatetime } from '../utils/helpers';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faCaretDown, faCaretUp, faFileAlt, faCoins, faCaretRight, faRankingStar, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faCaretDown, faCaretUp, faCoins, faCaretRight, faStar } from '@fortawesome/free-solid-svg-icons';
 import { Close } from '@tbdex/http-client'
-import { useTransactionContext } from './TransactionContext';
 import ReviewAndRating from '../components/ReviewAndRating';
-
 
 interface Transaction {
   _id: number;
@@ -19,12 +20,13 @@ interface Transaction {
 interface  Review {
   pfi: string;
   name: string;
-  rating: number;
+  rating: string;
   review: string;
   transactionId: string;
 }
 
 const TransactionsTable: React.FC = ({ onClick }) => {
+  const { userId, email, getUserTransactions } = useContext(AppContext);
   // const { transactions } = useTransactionContext();
   const transactions = localStorage.getItem('transactions') ? JSON.parse(localStorage.getItem('transactions') || '') : [];
   const [transactionsData, setTransactionsData] = useState<Transaction[]>([]);
@@ -36,32 +38,28 @@ const TransactionsTable: React.FC = ({ onClick }) => {
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const popup = useRef<HTMLDivElement | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
 
-  useEffect(() => {
-    const storedReviews = JSON.parse(localStorage.getItem('reviews') || '[]');
-    setReviews(storedReviews);
-  }, []);
+  const transactionsList  = useQuery(api.transactions.getUserTransactions, { userId: userId });
+  const createReview = useMutation(api.reviews.createReview);
+  const reviews = useQuery(api.reviews.getReview, { userId: userId });
 
   const toggleSidebar = (transactionId: string) => {
-    const selectedTransaction = transactions.find((transaction: any) => transaction.id === transactionId);
-    // console.log('Selected Transaction:', selectedTransaction);
+    const selectedTransaction = transactionsList?.find((transaction: any) => transaction._id === transactionId);
     setSelectedTransaction([selectedTransaction]);
     setIsSidebarOpen(!isSidebarOpen);
     setIsReviewOpen(false);
   };
 
-  const handleReviewSubmit = (rating: number, review: string) => {
+  const handleReviewSubmit = async (rating: number, review: string) => {
     const newReview = {
-      pfi: selectedTransaction[0]?.pfiDid,
-      name: selectedTransaction[0].from,
+      pfi: selectedTransaction[0]?.pfi,
+      name: email,
       rating,
       review,
-      transactionId: selectedTransaction[0].id
+      transactionId: selectedTransaction[0]._id
     };
-    const updatedReviews = [...reviews, newReview];
-      setReviews(updatedReviews);
-      localStorage.setItem('reviews', JSON.stringify(updatedReviews));
+      const reviewId = await createReview({ userId, ...newReview });
+      console.log(reviewId);
       setIsReviewOpen(false);
   };
 
@@ -121,7 +119,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
           </h4>
         </div>
 
-       {transactions.length > 0 ? (
+       {transactionsList && transactionsList.length > 0 ? (
            <div className="flex flex-col overflow-x-auto">
            <table className="min-w-full">
              <thead>
@@ -136,11 +134,11 @@ const TransactionsTable: React.FC = ({ onClick }) => {
              </thead>
              <tbody>
                {/* Table body */}
-               {transactions.map((transaction, index) => {
-                  const review = reviews.find(review => review.transactionId === transaction.id);
+               {transactionsList.map((transaction, index) => {
+                  // const review = reviews.find(review => review.transactionId === transaction._id);
 
                   return (
-                 <tr key={transaction.id} onClick={() => toggleSidebar(transaction.id)} className={`border-b border-strokedark ${index === 0 ? 'rounded-t-sm' : ''}`}>
+                 <tr key={transaction._id} onClick={() => toggleSidebar(transaction._id)} className={`border-b border-strokedark ${index === 0 ? 'rounded-t-sm' : ''}`}>
                    <td className="p-2.5 xl:p-5">{formatDatetime(transaction.createdTime)}</td>
                    <td className="p-2.5 xl:p-5">Outgoing Payment</td>
                    <td className="p-2.5 xl:p-5">{transaction.payinAmount} {transaction.payinCurrency}</td>
@@ -168,10 +166,9 @@ const TransactionsTable: React.FC = ({ onClick }) => {
       </div>
 
       {isSidebarOpen && (
-  <div className="fixed right-0 top-0 h-screen borde w-full lg:w-[25%] z-9999 bg-primary text-white shadow-lg">
+    <div className="fixed right-0 top-0 h-screen borde w-full lg:w-[25%] z-9999 bg-primary text-white shadow-lg">
     {selectedTransaction && selectedTransaction.map((transaction, index) => {
-       const review = reviews.find(review => review.transactionId === transaction.id);
-
+      const review = reviews?.find(review => review.transactionId === transaction._id);
       return (
       <div className="h-screen p-5 flex flex-col overflow-y-auto">
         <div className="flex justify-end">
@@ -267,6 +264,9 @@ const TransactionsTable: React.FC = ({ onClick }) => {
                             <div>
                               <p className="ml-4 text-bodydark text-sm">Order Status</p>
                               <p className="ml-4 text-sm">{transaction.status}</p>
+                              {transaction.status === "failed" && (
+                               <p className='ml-4 text-sm'>{transaction.closeReason}</p>
+                              )}
                             </div>
                           </div>
                         )}
@@ -287,24 +287,27 @@ const TransactionsTable: React.FC = ({ onClick }) => {
 
         {transaction.status === "completed" && (
           <div>
-              {!review ? (
+              {review != null ? (
+                <div className="my-4 p-4 bg-primary rounded-md">
+                  <p className="text-lg font-semibold mb-2">Your Rating</p>
+                  <div>
+                      <div>
+                        <div className="flex items-center">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <FontAwesomeIcon key={i} icon={faStar} className="text-yellow h-4 w-4 mr-1" />
+                        ))}
+                        </div>
+                        <p className="mt-2">{review.review}</p>
+                      </div>
+                  </div>
+                </div>
+              ) : (
                 <button 
                   onClick={() => setIsReviewOpen(true)}
                   className="bg-secondary hover:bg-secondary/50 text-white py-2 w-full rounded-2xl mt-auto flex items-center justify-center transition duration-150">
                   <FontAwesomeIcon icon={faStar} className="mr-2 text-yellow" />
                   Rate this Transaction
                 </button>
-              ) : (
-                <div className="my-4 p-4 bg-primary rounded-md">
-                  <p className="text-lg font-semibold mb-2">Your Rating</p>
-                  <div className="flex items-center">
-                    {/* Render stars based on the rating */}
-                    {[...Array(review.rating)].map((_, i) => (
-                      <FontAwesomeIcon key={i} icon={faStar} className="text-yellow h-4 w-4 mr-1" />
-                    ))}
-                  </div>
-                  <p className="mt-2">{review.review}</p>
-                </div>
               )}
             </div>
           )}

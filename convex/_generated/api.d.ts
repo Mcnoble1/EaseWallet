@@ -14,10 +14,17 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as bearerDids from "../bearerDids.js";
+import type * as CustomPassword from "../CustomPassword.js";
 import type * as http from "../http.js";
+import type * as myFunctions from "../myFunctions.js";
+import type * as offerings from "../offerings.js";
 import type * as ResendOTP from "../ResendOTP.js";
 import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
+import type * as reviews from "../reviews.js";
+import type * as transactions from "../transactions.js";
 import type * as users from "../users.js";
+import type * as vcs from "../vcs.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -29,10 +36,17 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  bearerDids: typeof bearerDids;
+  CustomPassword: typeof CustomPassword;
   http: typeof http;
+  myFunctions: typeof myFunctions;
+  offerings: typeof offerings;
   ResendOTP: typeof ResendOTP;
   ResendOTPPasswordReset: typeof ResendOTPPasswordReset;
+  reviews: typeof reviews;
+  transactions: typeof transactions;
   users: typeof users;
+  vcs: typeof vcs;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

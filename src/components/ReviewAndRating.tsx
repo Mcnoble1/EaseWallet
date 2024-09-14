@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { AppContext } from '../utils/AppContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
@@ -8,6 +11,9 @@ interface ReviewAndRatingProps {
 }
 
 const ReviewAndRating: React.FC<ReviewAndRatingProps> = ({ onSubmit, onClose }) => {
+
+  const { userId } = useContext(AppContext);
+
   const [rating, setRating] = useState<number>(0);
   const [review, setReview] = useState<string>('');
   const [error, setError] = useState<string | null>(null);

@@ -4,14 +4,15 @@ import axios from 'axios';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import CardOne from '../components/CardOne.tsx';
-import CardThree from '../components/CardThree.tsx';
+import Greeting from '../components/Greeting.tsx';
+import Wallet from '../components/Balance.tsx';
 import TransactionsTable from '../components/TransactionsTable.tsx';
 const Dashboard = () => {
     const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
+  // useEffect(() => {
     // Check if the user is signed in, otherwise redirect to the sign-in page
     const validateToken = async () => {
     try {
@@ -30,9 +31,9 @@ const Dashboard = () => {
       // Handle the error
     }
   };
-  validateToken();
+  // validateToken();
 
-  }, [navigate]);
+  // }, [navigate]);
 
 
   return (
@@ -45,7 +46,11 @@ const Dashboard = () => {
 
         <main>
           <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-            <CardThree />
+            <div className='w-full flex  gap-5 mb-5'>
+              <Greeting />
+              <Wallet user={"id"}/>
+            </div>
+          
             <h2 className='text-center text-2xl text-white font-bold mb-5 mt-5'>Trending PFIs</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
               <CardOne />

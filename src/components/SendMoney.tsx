@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { AppContext } from '../utils/AppContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filterOfferings, PFIs } from '../utils/helpers';
@@ -268,7 +271,8 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
 
 const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
   const navigate = useNavigate();
-  const { transactions, setTransactions } = useTransactionContext();
+  const { userId } = useContext(AppContext);
+  // const { transactions, setTransactions } = useTransactionContext();
   const [formData, setFormData] = useState({
     amount: '',
     fee: '',
@@ -305,6 +309,11 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const [payinMethodDetails, setPayinMethodDetails] = useState(null);
   const [payoutDetails, setPayoutDetails] = useState(null);
   const [errors, setErrors] = useState({});
+
+  const createTransaction = useMutation(api.transactions.createTransaction);
+  const updateTransaction = useMutation(api.transactions.updateTransaction);
+  const transactions = useQuery(api.transactions.getUserTransactions, { userId: userId }); 
+  console.log(transactions);
 
   const validateField = (name, value) => {
     let error = '';
@@ -436,7 +445,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const handleOrder = () => {
     addOrder(quoteDetails.exchangeId, quoteDetails.pfiDid);
     toast.success('Order placed successfully');
-    onNext(); // Proceed to the next step
+    onNext(); 
   };
 
   // display the date in words format like August 12, 2024
@@ -517,7 +526,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
       } else if (exchangeMessage.data.reason?.toLowerCase().includes('cancelled')) {
         return 'cancelled'
       } else {
-        return 'failed'
+        return `failed`
       }
     }
     return exchangeMessage.kind
@@ -539,6 +548,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         const quoteTime = quoteMessage?.metadata.createdAt
         const orderTime = orderMessage?.metadata.createdAt
         const closeTime = closeMessage?.metadata.createdAt
+        const closeReason = closeMessage?.data.reason
         const orderStatusTime = orderStatusMessage?.metadata.createdAt
         const orderStatus = orderStatusMessage?.data?.orderStatus
         const status = generateExchangeStatusValues(latestMessage)
@@ -561,8 +571,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
           pfiDid: rfqMessage.metadata.to
         })
         return {
-          message: latestMessage,
-          id: latestMessage.metadata.exchangeId,
+          // message: latestMessage,
           payinAmount: (fee ? Number(payinAmount) + Number(fee) : Number(payinAmount)).toString() || rfqMessage.data['payinAmount'],
           payinCurrency: quoteMessage.data['payin']?.['currencyCode'] ?? null,
           payoutAmount: quoteMessage?.data['payout']?.['amount'] ?? null,
@@ -570,10 +579,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
           status,
           exchangeId: latestMessage.metadata.exchangeId,
           createdTime: rfqMessage.createdAt,
-          ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
+          // ...latestMessage.kind === 'quote' && {expirationTime: quoteMessage.data['expiresAt'] ?? null},
           from: sender,
           to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber || " " + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
-          pfiDid: rfqMessage.metadata.to,
           rfqTime: rfqTime,
           platformFee: platformFee,
           quoteTime: quoteTime,
@@ -581,7 +589,9 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
           orderStatusTime: orderStatusTime,
           orderStatus: orderStatus,
           closeTime: closeTime,
-          pfi: selectedOffering.metadata.from
+          pfi: selectedOffering.metadata.from,
+          userId: userId,
+          closeReason: closeReason
         }
       })
 
@@ -652,26 +662,26 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   };
 
   const updateExchanges = (newTransactions) => {
-    const existingExchangeIds = transactions.map(tx => tx.id);
-    const updatedExchanges = [...transactions];
-
-    newTransactions.forEach(newTx => {
-      const existingTxIndex = updatedExchanges.findIndex(tx => tx.id === newTx.id);
+    console.log(newTransactions);
+    const existingExchangeIds = transactions?.map(tx => tx.exchangeId);
+    console.log("existing exchange Ids", existingExchangeIds);
+    const updatedExchanges = transactions;
+    console.log("updated exchange", updatedExchanges);
+    newTransactions.forEach(async newTx => {
+      console.log(newTx);
+      console.log(newTx.exchangeId);
+      const existingTxIndex = updatedExchanges.findIndex(tx => tx.exchangeId === newTx.exchangeId);
       if (existingTxIndex > -1) {
         // Update the existing transaction
         updatedExchanges[existingTxIndex] = newTx;
+        await updateTransaction({...newTx});
       } else {
         // Add the new transaction
-        updatedExchanges.push(newTx);
+        updatedExchanges?.push(newTx);
+        const transactionId = await createTransaction(newTx);
+        console.log('Transaction ID:', transactionId);
       }
     });
-
-    // Sort the transactions if needed
-    // updatedTransactions.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
-    // console.log('Updated Exchanges:', updatedExchanges);
-    // Update the state with the new transactions
-    setTransactions(updatedExchanges);
-    localStorage.setItem('transactions', JSON.stringify(updatedExchanges));
   };
 
   const pollExchanges = () => {
@@ -704,7 +714,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
               <label className="mb-2.5 block text-white">Amount</label>
               <input
                 type='text'
-                name="amount"
+                name="amount" 
                 value={formData.amount}
                 onChange={handleInputChange}
                 placeholder='1000'

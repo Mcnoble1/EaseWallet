@@ -1,30 +1,55 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext, } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthActions } from "@convex-dev/auth/react";
 import Object from '../images/logo/objects@2x.png';
 import { toast } from 'react-toastify';
+import { AppContext } from "../utils/AppContext";
 import 'react-toastify/dist/ReactToastify.css';
 import './signin.css';
 
 
 const SignIn = () => {
-  const { signIn } = useAuthActions();
-  const [step, setStep] = useState<"signIn" | "signUp" | { email: string }>("signIn");
+  const { signIn } = useContext( AppContext );
+  const [step, setStep] = useState<"signIn" | "signUp" | { email: string , name: string} >("signIn");
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
+  // const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false); // State for Remember Me checkbox
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-    const handleSignIn = async (e) => {  
+    const handleSignIn = async (e) => { 
       e.preventDefault();
-      const formData = new FormData(e.currentTarget);
-      void signIn("password-code", formData).then(() =>
-        setStep({ email: formData.get("email") as string }),
-      );
-      navigate('/dashboard');
+
+      // if (!email || !password || !username) {
+      //   toast.error('Please fill in all fields', {
+      //     position: toast.POSITION.TOP_RIGHT,
+      //     autoClose: 3000,
+      //   });
+      //   return;
+      // }
+
+      try {
+        setLoading(true); 
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        console.log('formData:', formData);
+        void signIn("password-code", formData).then(() =>
+          console.log('formData2:', formData),
+        console.log('email:', formData.get("email")),
+        console.log('name:', formData.get("name")),
+          setStep({ email: formData.get("email") as string, name: formData.get("name") as string }),
+        );
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to sign in:', error);
+        toast.error('Username or Password is incorrect', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 3000,
+        });
+        setLoading(false);
+      }
     }
 
   return (
@@ -42,36 +67,35 @@ const SignIn = () => {
             <form onSubmit={handleSignIn} className='w-[100%] lg:w-[80%]'>
               <div className="mb-4 ">
                 <label className="mb-2.5 block font-medium text-white dark:text-white">
-                  Username / Email address
+                  Email address
                 </label>
-                <div className={`relative ${email ? 'bg-transparent' : ''}`}>
+                <div className={`relative`}>
                   <input
                     name='email'
                     type="email"
                     placeholder="Email address"
-                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    value={email}
+                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                    // value={email}
                     required
-                    onChange={(e) => setEmail(e.target.value)}
+                    // onChange={(e) => setEmail(e.target.value)}
                   />
+                </div>
+              </div>
 
-                  <span className="absolute right-4 top-4">
-                    <svg
-                      className="fill-current"
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g opacity="0.5">
-                        <path
-                          d="M19.2516 3.30005H2.75156C1.58281 3.30005 0.585938 4.26255 0.585938 5.46567V16.6032C0.585938 17.7719 1.54844 18.7688 2.75156 18.7688H19.2516C20.4203 18.7688 21.4172 17.8063 21.4172 16.6032V5.4313C21.4172 4.26255 20.4203 3.30005 19.2516 3.30005ZM19.2516 4.84692C19.2859 4.84692 19.3203 4.84692 19.3547 4.84692L11.0016 10.2094L2.64844 4.84692C2.68281 4.84692 2.71719 4.84692 2.75156 4.84692H19.2516ZM19.2516 17.1532H2.75156C2.40781 17.1532 2.13281 16.8782 2.13281 16.5344V6.35942L10.1766 11.5157C10.4172 11.6875 10.6922 11.7563 10.9672 11.7563C11.2422 11.7563 11.5172 11.6875 11.7578 11.5157L19.8016 6.35942V16.5688C19.8703 16.9125 19.5953 17.1532 19.2516 17.1532Z"
-                          fill=""
-                        />
-                      </g>
-                    </svg>
-                  </span>
+              <div className="mb-4 ">
+                <label className="mb-2.5 block font-medium text-white dark:text-white">
+                  Username
+                </label>
+                <div className={`relative`}>
+                  <input
+                    name='name'
+                    type="text"
+                    placeholder="mcnoble"
+                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                    // value={username}
+                    required
+                    // onChange={(e) => setUsername(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -79,15 +103,15 @@ const SignIn = () => {
                 <label className="mb-2.5 block font-medium text-white dark:text-white">
                   Password
                 </label>
-                <div className={`relative ${password ? 'bg-transparent' : ''}`}>
+                <div className={`relative`}>
                   <input
                     name='password'
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter password"
-                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    value={password}
+                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                    // value={password}
                     required
-                    onChange={(e) => setPassword(e.target.value)}
+                    // onChange={(e) => setPassword(e.target.value)}
                   />
 
                   <span
@@ -164,9 +188,8 @@ const SignIn = () => {
             <div className="mb-3">
             <button
                 type="submit"
-                // onClick={handleSignIn}
                 className={`w-full cursor-pointer rounded-lg border border-primary bg-secondary p-4 text-white transition hover:bg-opacity-90 ${
-                  loading ? 'opacity-50 cursor-wait' : '' // Disable the button and change cursor when loading
+                  loading ? 'opacity-50 cursor-wait' : '' 
                 }`}
                 disabled={loading}
               >
@@ -196,6 +219,7 @@ const SignIn = () => {
                     onSubmit={(event) => {
                       event.preventDefault();
                       const formData = new FormData(event.currentTarget);
+                      console.log('formData:', formData);
                       void signIn("password-code", formData);
                       navigate('/dashboard');
                     }}

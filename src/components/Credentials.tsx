@@ -25,6 +25,8 @@ const Credentials = ({userDID}: any) => {
   const trigger = useRef<HTMLButtonElement | null>(null);
   const popup = useRef<HTMLDivElement | null>(null); 
 
+  const credentialJWT = localStorage.getItem('credentialJWT') || '';
+
   const togglePopup = (userId: string) => {
     credentialDetails.map((user) => { 
       if (user.recordId === userId) {
@@ -58,6 +60,7 @@ const Credentials = ({userDID}: any) => {
   };
 
   const handleGetCredential = () => {
+    setLoading(true);
     axios.get('https://mock-idv.tbddev.org/kcc', {
         params: {
           name: formData.name,
@@ -67,19 +70,20 @@ const Credentials = ({userDID}: any) => {
         })
         .then((response) => {
             localStorage.setItem('credentialJWT', response.data)
+            setLoading(false);
             setFormData({
               name: '',
               countryCode: '',
             })
             setPopupOpen(false);
-            window.location.reload();
+            fetchCredential();
+            // window.location.reload();
         })
         .catch((error) => {
             console.error('There was an error!', error);
         });
   }
 
-  const credentialJWT = localStorage.getItem('credentialJWT') || '';
 
   useEffect(() => {
     if (!credentialJWT) {
@@ -179,6 +183,8 @@ const Credentials = ({userDID}: any) => {
                             <label className="mb-2.5 block text-white">Country Code</label>
                             <input
                                 name="countryCode"
+                                maxLength={3}
+                                placeholder='NG'
                                 value={formData.countryCode}
                                 onChange={handleInputChange}
                                 required

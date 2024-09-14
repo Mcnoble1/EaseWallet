@@ -12,11 +12,11 @@ export const getUser = query({
     });
 
 export const updateUser = mutation({
-    args: { id: v.id("users"), name: v.string(), email: v.string()},
+    args: { id: v.id("users"), username: v.string(), email: v.string()},
     handler: async (ctx, args) => {
-        const { id, name, email } = args;
+        const { id, username, email } = args;
         await ctx.db.patch(id, {
-            name,
+            username,
             email,
         })
     }

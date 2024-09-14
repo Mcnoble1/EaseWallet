@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import Logo from '../images/logo/logo.png';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserGroup } from '@fortawesome/free-solid-svg-icons';
+import { faWallet, faUser, faMoneyBillTransfer, faTable, faMoneyCheck } from '@fortawesome/free-solid-svg-icons';
 import { faSlack } from '@fortawesome/free-brands-svg-icons';
 
 interface SidebarProps {
@@ -110,7 +110,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname.includes('dashboard') && 'bg-secondary'
                   }`}
                 >
-                   <FontAwesomeIcon icon={faSlack} style={{color: "#ffffff",}} />
+                   <FontAwesomeIcon icon={faTable} style={{color: "#ffffff",}} />
                   Dashboard
                 </NavLink>
               </li>
@@ -121,8 +121,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname.includes('profile') && 'bg-secondary'
                   }`}
                 >
-                   <FontAwesomeIcon icon={faSlack} style={{color: "#ffffff",}} />
+                   <FontAwesomeIcon icon={faUser} style={{color: "#ffffff",}} />
                   Profile
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/wallet"
+                  className={`group relative flex items-center gap-2.5 rounded-md py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-secondary ${
+                    pathname.includes('wallet') && 'bg-secondary'
+                  }`}
+                >
+                   <FontAwesomeIcon icon={faWallet} style={{color: "#ffffff",}} />
+                  Wallet
                 </NavLink>
               </li>
 
@@ -148,7 +160,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             : setSidebarExpanded(true);
                         }}
                       >
-                       <FontAwesomeIcon icon={faUserGroup} />
+                       <FontAwesomeIcon icon={faMoneyBillTransfer} />
                         Payments
                         <svg
                           className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
@@ -203,7 +215,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     'bg-secondary'
                   }`}
                 >
-                  <FontAwesomeIcon icon={faUserGroup} style={{color: "#fcfcfc",}} />
+                  <FontAwesomeIcon icon={faMoneyCheck} style={{color: "#fcfcfc",}} />
                   Transactions
                 </NavLink>
               </li>

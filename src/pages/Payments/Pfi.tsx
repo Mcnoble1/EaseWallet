@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { useParams, useNavigate } from 'react-router-dom'; 
 import { faDollarSign, faPiggyBank, faCreditCard, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../components/Header';
@@ -8,7 +10,7 @@ import ReviewsList from '../../components/ReviewsList';
 import 'react-toastify/dist/ReactToastify.css'; 
 import '../signin.css';
 
-interface Review {
+interface Review {  
   rating: number;
   review: string;
   name: string;
@@ -51,18 +53,9 @@ const Pfi = () => {
   const navigate = useNavigate();
   const [popupOpen, setPopupOpen] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const [reviews, setReviews] = useState<Review[]>([]); // Ensure this is an array
   const { did } = useParams();
   const pfi = PFIs.find((pfi) => pfi.did === did);
-
-  useEffect(() => {
-    // Get all reviews from localStorage
-    const allReviews = JSON.parse(localStorage.getItem("reviews") || "[]");
-    // Filter reviews where the pfi matches the did from the URL params
-    const pfiReviews = allReviews.filter((review: Review) => review.pfi === did);
-    // Update the state with the filtered reviews
-    setReviews(pfiReviews);
-  }, [did]); // Re-run the effect when `did` changes
+  const reviews = useQuery(api.reviews.getPfiReviews, { pfi: pfi?.did });
 
   return (
     <div className="bg-primary">

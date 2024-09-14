@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { AppContext } from "../utils/AppContext";
 import welcome from '../images/user/welcome.svg';
 import sunlightIcon from '../images/icon/sun.png';
 import moonIcon from '../images/icon/moon.png'; 
 
-const CardThree = () => {
+const Greeting = () => {
+
+const { email } = useContext(AppContext);
+
   const [greeting, setGreeting] = useState('Good Morning');
   const [icon, setIcon] = useState(sunlightIcon);
 
@@ -27,14 +31,14 @@ const CardThree = () => {
   }, []);
 
   return (
-    <div className="flex h-25 justify-between rounded-lg bg-tertiary py-3 px-7.5 shadow-default">
+    <div className="lg:w-[50%] flex h-25 justify-between rounded-lg bg-tertiary py-3 px-7.5 shadow-default">
       <div className="flex flex-col">
         <div className='flex gap-2'>
           <p className="text-white text-lg font-bold">{greeting}</p>
           <img src={icon} alt="Greeting Icon" className="mr-2 h-6 w-6" />
         </div>
         <div>
-          <p className="text-white text-lg font-bold">John</p>
+          <p className="text-white text-lg font-bold">{email}</p>
         </div>
       </div>    
       <div className="flex h-22">
@@ -44,4 +48,4 @@ const CardThree = () => {
   );
 };
 
-export default CardThree;
+export default Greeting;

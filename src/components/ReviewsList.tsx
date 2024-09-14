@@ -24,13 +24,13 @@ const avatars = [
 
 const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
   // Calculate the average rating
-  const averageRating = reviews.length > 0
+  const averageRating = reviews?.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
   return (
     <div className="mx-auto">
-      {reviews.length === 0 ? (
+      {reviews && reviews.length === 0 ? (
         <p className="text-gray-10">No reviews yet. Be the first to leave one!</p>
       ) : (
         <div>
@@ -41,7 +41,7 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
           </div>
 
           {/* Render the list of reviews */}
-          {reviews.map((review, index) => (
+          {reviews?.map((review, index) => (
             <div key={index} className="bg-tertiary p-4 mb-4 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
                 {/* Avatar */}

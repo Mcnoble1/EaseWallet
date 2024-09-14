@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { DidDht } from '@web5/dids'
+import { AppContext } from '../utils/AppContext';
 import Header from '../components/Header.tsx';
 import Sidebar from '../components/Sidebar.tsx';
 import Credentials from '../components/Credentials.tsx';
@@ -7,13 +8,13 @@ import welcome from '../images/user/welcome.svg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
 const Profile = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userDid, setUserDid] = useState<any>("");
-  const [isCopied, setIsCopied] = useState(false);
 
-  useEffect(() => {
-    initializeDid();
-  }, []);
+  const { userDid } = useContext(AppContext);
+
+  console.log(userDid);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // const [userDid, setUserDid] = useState<any>("");
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(userDid);
@@ -22,23 +23,6 @@ const Profile = () => {
     setTimeout(() => {
       setIsCopied(false);
     }, 3000);
-  };
-
-  const initializeDid = async () => {
-    try {
-      // Make sure to use a more secure Key Manager in production. More info: https://developer.tbd.website/docs/web5/build/decentralized-identifiers/key-management
-      const storedDid = localStorage.getItem('userDid');
-      if (storedDid) {
-        const did = await DidDht.import({ portableDid: JSON.parse(storedDid) });
-        setUserDid(did.uri);
-      } else {
-        const did = await DidDht.create({ options: { publish: true } });
-        const exportedDid = await did.export();
-        localStorage.setItem('userDid', JSON.stringify(exportedDid));
-      }
-    } catch (error) {
-      console.error('Failed to initialize DID:', error);
-    }
   };
 
   return (
