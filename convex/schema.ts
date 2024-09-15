@@ -1,12 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
-import { OrderStatus } from "@tbdex/http-client";
  
 const schema = defineSchema({
   ...authTables,
   users: defineTable({
-    name: v.optional(v.string()),
     email: v.string(),
     emailVerificationTime: v.optional(v.number()),
     // other "users" fields...
@@ -79,7 +77,7 @@ const schema = defineSchema({
     transactions: v.any(),
   }).index("did", ["did"]),
   vcs: defineTable({
-    userId: v.any(),
+    userId: v.optional(v.any()),
     vcJWT: v.string(),
   }).index("userId", ["userId"]),
   bearerDids: defineTable({

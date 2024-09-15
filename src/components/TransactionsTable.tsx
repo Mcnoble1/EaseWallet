@@ -142,7 +142,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
                    <td className="p-2.5 xl:p-5">{formatDatetime(transaction.createdTime)}</td>
                    <td className="p-2.5 xl:p-5">Outgoing Payment</td>
                    <td className="p-2.5 xl:p-5">{transaction.payinAmount} {transaction.payinCurrency}</td>
-                   <td className="p-2.5 xl:p-5"><span className={`${(transaction.status) === "completed" ? 'bg-green' : 'bg-danger' } px-2 pb-1 rounded-2xl font-medium text-white`}>{transaction.status}</span></td>
+                   <td className="p-2.5 xl:p-5"><span className={`${transaction.status === "completed" ? 'bg-green' : transaction.status === "quote" ? 'bg-secondary' : 'bg-danger'} px-2 pb-1 rounded-2xl font-medium text-white`}>{transaction.status}</span></td>
                    <td className="p-2.5 xl:p-5">
                      <div className="flex flex-row gap-4">
                        <button
@@ -184,7 +184,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
           <FontAwesomeIcon icon={faCoins} className="text-yellow-400 text-4xl mb-2" />
           <p className="text-lg font-semibold text-center">Withdrawal to {transaction.to}</p>
           <p className="text-2xl font-bold mt-2">{transaction.payinAmount} {transaction.payinCurrency}</p>
-          <p className={`text-sm mt-2 px-2 py-1 rounded-lg font-medium ${transaction.status === "completed" ? 'bg-green' : 'bg-danger'}`}>
+          <p className={`text-sm mt-2 px-2 py-1 rounded-lg font-medium ${transaction.status === "completed" ? 'bg-green' : transaction.status === "quote" ? 'bg-secondary' : 'bg-danger'}`}>
             {transaction.status}
           </p>
           <p className="text-gray-400 mt-1">{formatDatetime(transaction.createdTime)}</p>
@@ -202,7 +202,7 @@ const TransactionsTable: React.FC = ({ onClick }) => {
           {showTransactionDetails && (
             <div className="mt-2">
               <p className='text-sm text-bodydark'>Exchange ID</p>
-              <p >{transaction.id}</p>
+              <p >{transaction.exchangeId}</p>
               <p className='text-sm text-bodydark'>Sender</p>
               <p>{transaction.from}</p>
               <p className='text-sm text-bodydark'>Amount</p>

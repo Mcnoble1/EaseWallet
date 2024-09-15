@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
-import { DidDht } from '@web5/dids'
 import { AppContext } from '../utils/AppContext';
+import { useNavigate } from 'react-router-dom'; 
 import Header from '../components/Header.tsx';
 import Sidebar from '../components/Sidebar.tsx';
 import Credentials from '../components/Credentials.tsx';
@@ -9,12 +9,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
 const Profile = () => {
 
-  const { userDid } = useContext(AppContext);
-
-  console.log(userDid);
+  const { userDid, userId } = useContext(AppContext);
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // const [userDid, setUserDid] = useState<any>("");
   const [isCopied, setIsCopied] = useState(false);
+
+  // useEffect(() => {
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/signin');
+  //   }
+  // };
+  // validateUser();
+  // }, [navigate]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(userDid);

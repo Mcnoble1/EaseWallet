@@ -18,3 +18,8 @@ export const getOfferings = query({
         return offerings;
     },
 });
+
+
+
+
+

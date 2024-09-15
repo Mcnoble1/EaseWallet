@@ -9,7 +9,6 @@ import { DidDht } from '@web5/dids'
 import { PresentationExchange } from "@web5/credentials";
 import { useNavigate } from 'react-router-dom';
 import { Close, Order, Rfq, TbdexHttpClient } from '@tbdex/http-client'
-import { useTransactionContext } from './TransactionContext';
 import Loading from './Loading'
 const steps = [
   'Currency Input',
@@ -313,7 +312,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const createTransaction = useMutation(api.transactions.createTransaction);
   const updateTransaction = useMutation(api.transactions.updateTransaction);
   const transactions = useQuery(api.transactions.getUserTransactions, { userId: userId }); 
-  console.log(transactions);
+  console.log("transactions", transactions);
 
   const validateField = (name, value) => {
     let error = '';
@@ -465,14 +464,12 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   };  
 
   const createExchange = async (offering, amount, payinMethod, payinPaymentDetails, payoutMethod, payoutPaymentDetails) => {
-    // TODO 3: Choose only needed credentials to present using PresentationExchange.selectCredentials
     const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
     const selectedCredentials = PresentationExchange.selectCredentials({
       vcJwts: credentials,
       presentationDefinition: offering.data.requiredClaims,
     })
 
-    // TODO 4: Create RFQ message to Request for a Quote
     const rfq = Rfq.create({
       metadata: {
         from: userDid?.uri,
@@ -495,20 +492,12 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     })
 
     try{
-      // TODO 5: Verify offering requirements with RFQ - rfq.verifyOfferingRequirements(offering)
       rfq.verifyOfferingRequirements(offering)
     } catch (e) {
-      // handle failed verification
       console.log('Offering requirements not met', e)
     }
-
-    // TODO 6: Sign RFQ message
     await rfq.sign(userDid)
-
-    // console.log('RFQ:', rfq)
-
     try {
-      // TODO 7: Submit RFQ message to the PFI .createExchange(rfq)
       await TbdexHttpClient.createExchange(rfq)
       console.log("creating exchange");
     }
@@ -531,7 +520,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     }
     return exchangeMessage.kind
   }
-
 
   const formatMessages = (exchanges) => {
     console.log(exchanges)
@@ -601,7 +589,6 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const fetchExchanges = async (pfiUri) => {
     const userDid = await DidDht.import({ portableDid: JSON.parse(did) });
     try {
-      // TODO 8: get exchanges from the PFI
       const exchanges = await TbdexHttpClient.getExchanges({
         pfiDid: pfiUri,
         did: userDid
@@ -661,28 +648,49 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
     }
   };
 
-  const updateExchanges = (newTransactions) => {
-    console.log(newTransactions);
-    const existingExchangeIds = transactions?.map(tx => tx.exchangeId);
-    console.log("existing exchange Ids", existingExchangeIds);
-    const updatedExchanges = transactions;
-    console.log("updated exchange", updatedExchanges);
-    newTransactions.forEach(async newTx => {
-      console.log(newTx);
-      console.log(newTx.exchangeId);
-      const existingTxIndex = updatedExchanges.findIndex(tx => tx.exchangeId === newTx.exchangeId);
-      if (existingTxIndex > -1) {
-        // Update the existing transaction
-        updatedExchanges[existingTxIndex] = newTx;
-        await updateTransaction({...newTx});
+  const updateExchanges = async (newTransactions) => {
+
+    if (loading || !transactions) {
+      console.log('Transactions are still loading or not available.');
+    }
+
+    if (!transactions || transactions.length === 0) {
+      console.log('No transactions found for this user.');
+    }
+  
+    console.log('Fetched transactions:', transactions);
+
+    console.log("incoming Transaction", newTransactions);
+
+    const existingExchangeIdandTransactionId = transactions?.map(transaction => ({
+      _id: transaction._id,
+      exchangeId: transaction.exchangeId
+    }));
+    console.log('Mapped transaction IDs and exchange IDs:', existingExchangeIdandTransactionId);
+  
+    for (const transaction of newTransactions) {
+      const existingTransaction = existingExchangeIdandTransactionId.find(
+        (existingTransaction) => existingTransaction.exchangeId === transaction.exchangeId
+      );
+  
+      if (!existingTransaction) {
+        // Only create the transaction if exchangeId does not already exist in the database
+        console.log('New transaction detected. Creating:', transaction.exchangeId);
+        const transactionId = await createTransaction(transaction);
+        console.log('Transaction created:', transactionId);
       } else {
-        // Add the new transaction
-        updatedExchanges?.push(newTx);
-        const transactionId = await createTransaction(newTx);
-        console.log('Transaction ID:', transactionId);
+        // Update the existing transaction if the exchangeId matches
+        const transactionId = existingTransaction._id;
+        console.log('Transaction already exists, updating:', transactionId);
+  
+        const updatedTransaction = await updateTransaction({
+          id: transactionId, ...transaction
+        });
+        console.log('Transaction updated:', updatedTransaction);
       }
-    });
+    }
   };
+  
 
   const pollExchanges = () => {
     const fetchAllExchanges = async () => {
@@ -694,12 +702,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
         console.error('Failed to fetch exchanges:', error);
       }
     };
-
-    // Run the function immediately
     fetchAllExchanges();
-
-    // Set up the interval to run the function periodically
-    setInterval(fetchAllExchanges, 5000); // Poll every 5 seconds
+    setInterval(fetchAllExchanges, 30000);
   };
   
   return (

@@ -30,9 +30,9 @@ export const getTransactions = query({
     });
 
 export const createTransaction = mutation({
-    args: { userId: v.any(), payinAmount: v.string(), payoutAmount: v.string(), payinCurrency: v.string(), payoutCurrency: v.string(), type: v.optional(v.string()), description: v.optional(v.string()), status: v.string(), exchangeId: v.any(), fee: v.optional(v.string()), from: v.optional(v.string()), to: v.string(), closeTime: v.optional(v.string()), orderTime: v.optional(v.string()), quoteTime: v.string(), rfqTime: v.string(), platformFee: v.string(), pfi: v.string(), createdTime: v.string(), orderStatus: v.optional(v.string()), orderStatusTime: v.optional(v.string()) },
+    args: { userId: v.any(), payinAmount: v.string(), payoutAmount: v.string(), closeReason: v.optional(v.string()), payinCurrency: v.string(), payoutCurrency: v.string(), type: v.optional(v.string()), description: v.optional(v.string()), status: v.string(), exchangeId: v.any(), fee: v.optional(v.string()), from: v.optional(v.string()), to: v.string(), closeTime: v.optional(v.string()), orderTime: v.optional(v.string()), quoteTime: v.string(), rfqTime: v.string(), platformFee: v.string(), pfi: v.string(), createdTime: v.string(), orderStatus: v.optional(v.string()), orderStatusTime: v.optional(v.string()) },
     handler: async (ctx, args) => {
-        const { userId, payinAmount, payoutAmount, payinCurrency, orderStatus, orderStatusTime, payoutCurrency, type, description, status, exchangeId, fee, from, to, closeTime, orderTime, quoteTime, rfqTime, platformFee, pfi, createdTime  } = args;
+        const { userId, payinAmount, payoutAmount, payinCurrency, closeReason, orderStatus, orderStatusTime, payoutCurrency, type, description, status, exchangeId, fee, from, to, closeTime, orderTime, quoteTime, rfqTime, platformFee, pfi, createdTime  } = args;
         const transactionId = await ctx.db.insert("transactions", {
             userId,
             payinAmount,
@@ -47,6 +47,7 @@ export const createTransaction = mutation({
             to,
             payoutAmount,
             closeTime,
+            closeReason,
             orderTime,
             quoteTime,
             rfqTime,
@@ -61,10 +62,10 @@ export const createTransaction = mutation({
 });
 
 export const updateTransaction = mutation({
-    args: { userId: v.any(), payinAmount: v.string(), payoutAmount: v.string(), closeReason: v.optional(v.string()), payinCurrency: v.string(), payoutCurrency: v.string(), type: v.optional(v.string()), description: v.optional(v.string()), status: v.string(), exchangeId: v.any(), fee: v.optional(v.string()), from: v.optional(v.string()), to: v.string(), closeTime: v.optional(v.string()), orderTime: v.optional(v.string()), quoteTime: v.string(), rfqTime: v.string(), platformFee: v.string(), pfi: v.string(), createdTime: v.string(), orderStatus: v.optional(v.string()), orderStatusTime: v.optional(v.string()) },
+    args: { id: v.id("transactions"), userId: v.any(), payinAmount: v.string(), payoutAmount: v.string(), closeReason: v.optional(v.string()), payinCurrency: v.string(), payoutCurrency: v.string(), type: v.optional(v.string()), description: v.optional(v.string()), status: v.string(), exchangeId: v.any(), fee: v.optional(v.string()), from: v.optional(v.string()), to: v.string(), closeTime: v.optional(v.string()), orderTime: v.optional(v.string()), quoteTime: v.string(), rfqTime: v.string(), platformFee: v.string(), pfi: v.string(), createdTime: v.string(), orderStatus: v.optional(v.string()), orderStatusTime: v.optional(v.string()) },
     handler: async (ctx, args) => {
-        const { userId, payinAmount, payoutAmount, payinCurrency, payoutCurrency, type, closeReason, description, status, exchangeId, fee, from, to, closeTime, orderTime, quoteTime, rfqTime, platformFee, pfi, createdTime  } = args;
-        await ctx.db.patch(exchangeId, {
+        const { id, userId, payinAmount, payoutAmount, payinCurrency, payoutCurrency, type, closeReason, description, status, exchangeId, fee, from, to, closeTime, orderTime, quoteTime, rfqTime, platformFee, pfi, createdTime  } = args;
+        await ctx.db.patch(id, {
             userId,
             payinAmount,
             payinCurrency,

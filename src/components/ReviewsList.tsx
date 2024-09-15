@@ -1,5 +1,7 @@
 import React from 'react';
-
+import One from '../images/user/1.png';
+import Two from '../images/user/3.png';
+import Three from '../images/user/4.png';
 interface Review {
   rating: number;
   review: string;
@@ -14,12 +16,9 @@ interface ReviewsListProps {
 
 // List of dummy avatars
 const avatars = [
-  'https://randomuser.me/api/portraits/men/1.jpg',
-  'https://randomuser.me/api/portraits/women/2.jpg',
-  'https://randomuser.me/api/portraits/men/3.jpg',
-  'https://randomuser.me/api/portraits/women/4.jpg',
-  'https://randomuser.me/api/portraits/men/5.jpg',
-  'https://randomuser.me/api/portraits/women/6.jpg',
+  One,
+  Two,
+  Three,
 ];
 
 const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
@@ -44,20 +43,16 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
           {reviews?.map((review, index) => (
             <div key={index} className="bg-tertiary p-4 mb-4 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
-                {/* Avatar */}
                 <img
-                  src={avatars[index % avatars.length]} // Choose an avatar based on the index
+                  src={avatars[index % avatars.length]}
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full mr-4"
                 />
                 <div>
-                  {/* Name */}
                   <p className="font-semibold text-white">-{review.name}</p>
-                  {/* Transaction Performed */}
                   <p className="text-sm text-white">{review.transaction}</p>
                 </div>
               </div>
-              {/* Star Rating */}
               <div className="flex items-center mb-2">
                 {[...Array(review.rating)].map((_, i) => (
                   <span key={i} className="text-yellow text-2xl">★</span>

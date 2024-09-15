@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { AppContext } from '../utils/AppContext';
 import { useNavigate } from 'react-router-dom'; 
-import axios from 'axios'; 
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import CardOne from '../components/CardOne.tsx';
@@ -8,31 +8,19 @@ import Greeting from '../components/Greeting.tsx';
 import Wallet from '../components/Balance.tsx';
 import TransactionsTable from '../components/TransactionsTable.tsx';
 const Dashboard = () => {
+  const { userId } = useContext(AppContext);
+
     const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // useEffect(() => {
-    // Check if the user is signed in, otherwise redirect to the sign-in page
-    const validateToken = async () => {
-    try {
-      const token = localStorage.getItem('token') || '';
-      const response = await axios.get('https://madad.onrender.com/api/admin/login', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.status !== 200) {
-        navigate('/signin');
-      } 
-    } catch (error) {
-      navigate('/signin');
-      console.error('Error:', error);
-      // Handle the error
-    }
-  };
-  // validateToken();
-
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/signin');
+  //   }
+  // };
+  // validateUser();
   // }, [navigate]);
 
 
@@ -46,7 +34,7 @@ const Dashboard = () => {
 
         <main>
           <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-            <div className='w-full flex  gap-5 mb-5'>
+            <div className='w-full flex flex-col lg:flex-row gap-5 mb-5'>
               <Greeting />
               <Wallet user={"id"}/>
             </div>

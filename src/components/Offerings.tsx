@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { TbdexHttpClient } from '@tbdex/http-client';
-import { filterOfferings, PFIs } from '../utils/helpers';
+import { useNavigate } from 'react-router-dom';
 
 const Offerings = ({ pfiDid }) => {
-    const [offerings, setOfferings] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchOfferings = async () => {
-        const offerings = await TbdexHttpClient.getOfferings({
-            pfiDid: pfiDid
-          });
-        setOfferings(offerings);
-        }
-    useEffect(() => {
-        fetchOfferings();
-        // setLoading(false);
-    }, []); 
+    const navigate = useNavigate();
+    const offeringsData = JSON.parse(localStorage.getItem('offerings') || '{}');
 
     const formatTime = (seconds: number): string => {
       const hours = Math.floor(seconds / 3600);
@@ -25,16 +13,20 @@ const Offerings = ({ pfiDid }) => {
       const hoursStr = hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''}` : '';
       const minutesStr = minutes > 0 ? `${minutes} minute${minutes > 1 ? 's' : ''}` : '';
       const secondsStr = remainingSeconds > 0 ? `${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}` : '';
-    
-      // Combine hours, minutes, and seconds into a readable format
       return [hoursStr, minutesStr, secondsStr].filter(Boolean).join(', ');
+    }
+
+    const handleOfferingClick = (offering: any) => {
+      // localStorage.setItem('selectedOffering', JSON.stringify(offering));
+      // localStorage.setItem('selectedStep', '3');
+      navigate('/payments/send');
     }
 
   return (
     <div className="">
     <h4 className="text-title-sm mb-4 font-semibold text-white">Offerings</h4>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
-      {offerings?.map((offering, index) => (
+      {offeringsData[pfiDid].map((offering, index) => (
           <div key={index} onClick={() => handleOfferingClick(offering)} className="bg-tertiary text-white rounded-lg shadow-md p-3 cursor-pointer hover:bg-opacity-100">
             <div className='flex justify-between'>
               <h5 className="text-md font-semibold mb-2">

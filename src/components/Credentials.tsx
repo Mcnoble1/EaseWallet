@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, ChangeEvent, useContext } from 'react';
+import { AppContext } from '../utils/AppContext';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import axios from 'axios'
-import { Jwt, VerifiableCredential, PresentationExchange } from "@web5/credentials";
-import { currencyIcons } from '../utils/helpers';
+import { Jwt } from "@web5/credentials";
 import Badge from '../images/badge.png';
 
 interface credentialDetails {
@@ -11,8 +13,8 @@ interface credentialDetails {
   issuanceDate: string;
 }
 
-
 const Credentials = ({userDID}: any) => {
+  const { userId } = useContext(AppContext);
   const [popupOpenMap, setPopupOpenMap] = useState<{ [key: number]: boolean }>({});
   const [popupOpen, setPopupOpen] = useState(false);
   const [credentialDetails, setCredentialDetails] = useState<credentialDetails>([]);
@@ -25,7 +27,10 @@ const Credentials = ({userDID}: any) => {
   const trigger = useRef<HTMLButtonElement | null>(null);
   const popup = useRef<HTMLDivElement | null>(null); 
 
+  const saveVcJWT = useMutation(api.vcs.createVcJWT);
+  const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });  
   const credentialJWT = localStorage.getItem('credentialJWT') || '';
+
 
   const togglePopup = (userId: string) => {
     credentialDetails.map((user) => { 
@@ -70,14 +75,14 @@ const Credentials = ({userDID}: any) => {
         })
         .then((response) => {
             localStorage.setItem('credentialJWT', response.data)
+            saveVcJWT({ userId: userId, vcJWT: response.data });
             setLoading(false);
             setFormData({
               name: '',
               countryCode: '',
             })
+            window.location.reload();
             setPopupOpen(false);
-            fetchCredential();
-            // window.location.reload();
         })
         .catch((error) => {
             console.error('There was an error!', error);
@@ -91,6 +96,8 @@ const Credentials = ({userDID}: any) => {
     }
     fetchCredential();
   }, []);
+
+  // console.log(getVcJWT);
 
   const fetchCredential = () => {
     const vc: any = Jwt.parse({ jwt: credentialJWT }).decoded.payload['vc']

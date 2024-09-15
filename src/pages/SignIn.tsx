@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, } from 'react';
+import { ConvexError } from "convex/values";  
 import { Link, useNavigate } from 'react-router-dom';
 import Object from '../images/logo/objects@2x.png';
 import { toast } from 'react-toastify';
@@ -9,11 +10,8 @@ import './signin.css';
 
 const SignIn = () => {
   const { signIn } = useContext( AppContext );
-  const [step, setStep] = useState<"signIn" | "signUp" | { email: string , name: string} >("signIn");
+  const [step, setStep] = useState<"signIn" | "signUp" | { email: string } >("signIn");
 
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -22,28 +20,21 @@ const SignIn = () => {
     const handleSignIn = async (e) => { 
       e.preventDefault();
 
-      // if (!email || !password || !username) {
-      //   toast.error('Please fill in all fields', {
-      //     position: toast.POSITION.TOP_RIGHT,
-      //     autoClose: 3000,
-      //   });
-      //   return;
-      // }
-
       try {
         setLoading(true); 
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        console.log('formData:', formData);
         void signIn("password-code", formData).then(() =>
-          console.log('formData2:', formData),
         console.log('email:', formData.get("email")),
-        console.log('name:', formData.get("name")),
-          setStep({ email: formData.get("email") as string, name: formData.get("name") as string }),
+          setStep({ email: formData.get("email") as string }),
         );
         setLoading(false);
       } catch (error) {
         console.error('Failed to sign in:', error);
+        const errorMessage =  error instanceof ConvexError ? (error.data as { message: string }).message  
+          : 
+            "Unexpected error occurred";  
+        console.log('errorMessage:', errorMessage);
         toast.error('Username or Password is incorrect', {
           position: toast.POSITION.TOP_RIGHT,
           autoClose: 3000,
@@ -58,7 +49,7 @@ const SignIn = () => {
       <div className="flex flex-wrap items-center">
         <div className="w-full xl:w-3/5"> 
           <div className="">
-            <h2 className="mb-1 text-2xl font-bold text-white dark:text-white sm:text-title-xl2">
+            <h2 className="mb-5 text-2xl font-bold text-white dark:text-white sm:text-title-xl2">
               EaseWallet
             </h2>
             {/* <span className="mb-5 block text-white font-medium">Enter your portable DID to sign in</span> */}
@@ -75,26 +66,7 @@ const SignIn = () => {
                     type="email"
                     placeholder="Email address"
                     className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    // value={email}
                     required
-                    // onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4 ">
-                <label className="mb-2.5 block font-medium text-white dark:text-white">
-                  Username
-                </label>
-                <div className={`relative`}>
-                  <input
-                    name='name'
-                    type="text"
-                    placeholder="mcnoble"
-                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    // value={username}
-                    required
-                    // onChange={(e) => setUsername(e.target.value)}
                   />
                 </div>
               </div>
@@ -109,14 +81,12 @@ const SignIn = () => {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter password"
                     className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    // value={password}
                     required
-                    // onChange={(e) => setPassword(e.target.value)}
                   />
 
                   <span
                       className="absolute right-4 top-4 cursor-pointer"
-                      onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+                      onClick={() => setShowPassword(!showPassword)} 
                     >
                       {showPassword ? (
                         <svg
@@ -127,7 +97,6 @@ const SignIn = () => {
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
-                          {/* Replace with your eye icon when the password is visible */}
                           <svg
                               width="22"
                               height="22"
@@ -177,7 +146,7 @@ const SignIn = () => {
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={rememberMe} // Set checked state to checked prop
+                  checked={rememberMe} 
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="form-checkbox h-5 w-5 text-blue-600"
                 />
@@ -235,7 +204,6 @@ const SignIn = () => {
                           placeholder="Code"
                           className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                           required
-                          // onChange={(e) => setEmail(e.target.value)}
                         />
                       </div>
                     </div>

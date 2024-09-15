@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../utils/AppContext';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Breadcrumb from '../components/Breadcrumb';
@@ -6,9 +8,19 @@ import TransactionsTable from '../components/TransactionsTable';
 import 'react-toastify/dist/ReactToastify.css'; 
 import './signin.css';
 
-
 const Tables: React.FC = () => {
+  const { userId } = useContext(AppContext);
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // useEffect(() => {
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/signin');
+  //   }
+  // };
+  // validateUser();
+  // }, [navigate]);
 
   return (
     <div className="bg-primary">

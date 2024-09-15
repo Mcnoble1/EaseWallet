@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; 
+import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../../utils/AppContext';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import Breadcrumb from '../../components/Breadcrumb';
@@ -9,29 +9,18 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../signin.css';
 
 const Categories: React.FC = () => {
+  const { userId } = useContext(AppContext);
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
- 
-  useEffect(() => {
-    // Check if the user is signed in, otherwise redirect to the sign-in page
-    const validateToken = async () => {
-      try {
-        const token = localStorage.getItem('token') || '';
-        const response = await axios.get('https://madad.onrender.com/api/admin/login', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.status !== 200) {
-        } 
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-    validateToken();
-    
-  }, [navigate]);
 
+  // useEffect(() => {
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/signin');
+  //   }
+  // };
+  // validateUser();
+  // }, [navigate]);
 
   return (
     <div className="bg-primary">

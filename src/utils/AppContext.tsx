@@ -21,7 +21,8 @@ const ContextProvider = ({ children }) => {
     const user = useQuery(api.myFunctions.currentUser);
     const userId = user?._id;
     // const username = user?.username;
-    const email = user?.email;
+    const emailAddress = user?.email;
+    const email = emailAddress?.split('@')[0];
 
     const createOfferings = useMutation(api.offerings.createOfferings);
     // const offerings = useQuery(api.offerings.getOfferings);
@@ -33,6 +34,8 @@ const ContextProvider = ({ children }) => {
     const reviews = useQuery(api.reviews.getReviews);
     const createReview = useMutation(api.reviews.createReview);
     const updateTransaction = useMutation(api.transactions.updateTransaction);
+    const saveVcJWT = useMutation(api.vcs.createVcJWT);
+    const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });    
 
     useEffect(() => {
         if (offerings?.length === 0) {
