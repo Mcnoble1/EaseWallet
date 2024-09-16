@@ -39,9 +39,12 @@ function App() {
     <>
     <Toaster position='top-right' reverseOrder={false} containerClassName='overflow-auto'/>
       <AuthLoading><Loader /></AuthLoading>
+        <Routes>
+          <Route path="/" element={<SignIn />} />
+        </Routes>
         <Unauthenticated>
           <Routes>
-            <Route path="/" element={<SignIn />} />
+            {/* <Route path="/" element={<SignIn />} /> */}
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

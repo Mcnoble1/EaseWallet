@@ -9,7 +9,7 @@ const DropdownUser = () => {
   const SignOut = () => {
     signOut();
     if (signOut) {
-      navigate('/signin');
+      navigate('/');
     }
     // navigate('/signin');
   }

@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext, } from 'react';
-import { ConvexError } from "convex/values";  
 import { Link, useNavigate } from 'react-router-dom';
 import Object from '../images/logo/objects@2x.png';
 import { toast } from 'react-toastify';
@@ -20,28 +19,22 @@ const SignIn = () => {
     const handleSignIn = async (e) => { 
       e.preventDefault();
 
-      try {
         setLoading(true); 
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        void signIn("password-code", formData).then(() =>
-        console.log('email:', formData.get("email")),
+        signIn("password-code", formData).then(() =>
           setStep({ email: formData.get("email") as string }),
-        );
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to sign in:', error);
-        const errorMessage =  error instanceof ConvexError ? (error.data as { message: string }).message  
-          : 
-            "Unexpected error occurred";  
-        console.log('errorMessage:', errorMessage);
-        toast.error('Username or Password is incorrect', {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
+        ).catch((error) => {
+          console.error(error);
+          const title = step === "signIn"
+              ? "Email or password incorrect, did you mean to sign up?"
+              : "Could not sign up, did you mean to sign in?";
+          toast.error( title, { autoclose: 3000 });
         });
+        // navigate("/dashboard");
         setLoading(false);
       }
-    }
+
 
   return (
     <>
@@ -174,23 +167,29 @@ const SignIn = () => {
               >
                 {step === "signIn" ? "Sign up instead" : "Sign in instead"}
               </p>
-              <div className="mb-9">
+              {/* <div className="mb-9">
                 <p>
                   <Link to="forgot-password" className="">
                     Forgot password?
                   </Link>
                 </p>
-              </div>
+              </div> */}
             </form>
                 ) : (
                   <form
                     className='w-[100%] lg:w-[80%]'
                     onSubmit={(event) => {
                       event.preventDefault();
+                      setLoading(true);
                       const formData = new FormData(event.currentTarget);
-                      console.log('formData:', formData);
-                      void signIn("password-code", formData);
-                      navigate('/dashboard');
+                      signIn("password-code", formData)
+                        .catch((error) => {
+                        console.error(error);
+                        const title = "Code could not be verified, please try again";
+                        toast.error( title, { autoclose: 3000 });
+                      });
+                      navigate("/dashboard");
+                      setLoading(false);        
                     }}
                   >
                     <div className='mb-5'>

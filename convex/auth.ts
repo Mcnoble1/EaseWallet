@@ -16,21 +16,5 @@ export const { auth, signIn, signOut, store } = convexAuth({
       verify: ResendOTP,
     }),
   ],
-  callbacks: {
-    async createOrUpdateUser(ctx, args) {
-      if (args.existingUserId) {
-        await ctx.db.patch(args.existingUserId, {
-          email: args.profile.email,
-          name: args.profile.name, // Include the name here
-        });
-        return args.existingUserId;
-      } else {
-        return await ctx.db.insert('users', {
-          email: args.profile.email,
-          name: args.profile.name, // And here
-        });
-      }
-    },
-  },
 });
 
