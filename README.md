@@ -33,7 +33,7 @@ For Verifiable Credentials (VCs), Easewallet is integrated with Ultimate Identit
 This design ensures users can manage their identities and credentials securely while ensuring compliance with regulatory requirements.
 
 ### 4. **Customer Satisfaction Tracking**
-Easewallet tracks customer satisfaction through an integrated rating and review system. After each transaction, users are prompted to rate the PFI they used by leaving a start rating and review comment. We plan to improve the rating system by adding factors such as transaction speed, fees, and overall satisfaction in our next iteration.
+Easewallet tracks customer satisfaction through an integrated rating and review system. After each transaction, users are prompted to rate the PFI they used by leaving a star rating and review comment. We plan to improve the rating system by adding factors such as adherence to the estimated settlement time, and overall satisfaction in our next iteration.
 The application aggregates these individual ratings into an overall star rating for each PFI, which is displayed prominently alongside other offerings when users are selecting a PFI for future transactions. In addition to ratings, we track metrics such as the number of trades and transaction completion rate to give a more comprehensive view of each PFI's performance.
 This combination of user feedback and performance metrics ensures that customers have a clear understanding of each PFI's quality, while also allowing PFIs to monitor and improve their services based on customer input. The system enhances transparency and encourages PFIs to maintain high standards, thereby improving overall user satisfaction. And in cases where a PFI has been consistently falling short, we remove the PFI from our platform.
 
