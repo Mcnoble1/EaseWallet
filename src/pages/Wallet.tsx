@@ -19,14 +19,14 @@ const Wallet = ({ user }) => {
   const [cards, setCards] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
 
-  useEffect(() => {
-    const validateUser = async () => {
-    if (!userId) {
-      navigate('/');
-    }
-  };
-  validateUser();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/');
+  //   }
+  // };
+  // validateUser();
+  // }, [navigate]);
 
   useEffect(() => {
     const fetchPaymentMethods = async () => {

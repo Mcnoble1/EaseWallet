@@ -14,14 +14,14 @@ const Dashboard = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const validateUser = async () => {
-    if (!userId) {
-      navigate('/');
-    }
-  };
-  validateUser();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/');
+  //   }
+  // };
+  // validateUser();
+  // }, [navigate]);
 
 
   return (

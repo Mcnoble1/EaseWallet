@@ -13,14 +13,14 @@ const Tables: React.FC = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const validateUser = async () => {
-    if (!userId) {
-      navigate('/');
-    }
-  };
-  validateUser();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const validateUser = async () => {
+  //   if (!userId) {
+  //     navigate('/');
+  //   }
+  // };
+  // validateUser();
+  // }, [navigate]);
 
   return (
     <div className="bg-primary">
