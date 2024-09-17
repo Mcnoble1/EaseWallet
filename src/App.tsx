@@ -19,7 +19,7 @@ const DefaultLayout = lazy(() => import('./layout/DefaultLayout'));
 
 function App() {
 
-  const { userId, offerings, prefetchOfferings } = useContext(AppContext);
+  const { userId, prefetchOfferings } = useContext(AppContext);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -28,9 +28,6 @@ function App() {
 
   useEffect(() => {
     prefetchOfferings;
-    if (!offerings) {
-      prefetchOfferings;
-    }
   }, []);
 
   return loading ? (

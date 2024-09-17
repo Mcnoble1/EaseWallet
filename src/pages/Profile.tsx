@@ -15,14 +15,14 @@ const Profile = () => {
   // const [userDid, setUserDid] = useState<any>("");
   const [isCopied, setIsCopied] = useState(false);
 
-  // useEffect(() => {
-  //   const validateUser = async () => {
-  //   if (!userId) {
-  //     navigate('/signin');
-  //   }
-  // };
-  // validateUser();
-  // }, [navigate]);
+  useEffect(() => {
+    const validateUser = async () => {
+    if (!userId) {
+      navigate('/');
+    }
+  };
+  validateUser();
+  }, [navigate]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(userDid);

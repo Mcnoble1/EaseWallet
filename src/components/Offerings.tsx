@@ -26,7 +26,7 @@ const Offerings = ({ pfiDid }) => {
     <div className="">
     <h4 className="text-title-sm mb-4 font-semibold text-white">Offerings</h4>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
-      {offeringsData[pfiDid].map((offering, index) => (
+      {offeringsData[pfiDid]?.map((offering, index) => (
           <div key={index} onClick={() => handleOfferingClick(offering)} className="bg-tertiary text-white rounded-lg shadow-md p-3 cursor-pointer hover:bg-opacity-100">
             <div className='flex justify-between'>
               <h5 className="text-md font-semibold mb-2">

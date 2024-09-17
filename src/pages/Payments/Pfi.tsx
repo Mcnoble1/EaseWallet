@@ -55,14 +55,14 @@ const Pfi = () => {
   const pfi = PFIs.find((pfi) => pfi.did === did);
   const reviews = useQuery(api.reviews.getPfiReviews, { pfi: pfi?.did });
 
-  // useEffect(() => {
-  //   const validateUser = async () => {
-  //   if (!userId) {
-  //     navigate('/signin');
-  //   }
-  // };
-  // validateUser();
-  // }, [navigate]);
+  useEffect(() => {
+    const validateUser = async () => {
+    if (!userId) {
+      navigate('/');
+    }
+  };
+  validateUser();
+  }, [navigate]);
 
   return (
     <div className="bg-primary">

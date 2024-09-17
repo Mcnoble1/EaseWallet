@@ -26,7 +26,6 @@ const ContextProvider = ({ children }) => {
 
     const createOfferings = useMutation(api.offerings.createOfferings);
     // const offerings = useQuery(api.offerings.getOfferings);
-    const offerings = JSON.parse(localStorage.getItem('offerings'));
     const createTransaction = useMutation(api.transactions.createTransaction);
     const Transactions = useQuery(api.transactions.getTransactions);
     // const userTransactions = useQuery(api.transactions.getUserTransactions, { userId: userId });
@@ -35,13 +34,11 @@ const ContextProvider = ({ children }) => {
     const createReview = useMutation(api.reviews.createReview);
     const updateTransaction = useMutation(api.transactions.updateTransaction);
     const saveVcJWT = useMutation(api.vcs.createVcJWT);
-    const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });    
+    const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });   
 
     useEffect(() => {
-        if (offerings?.length === 0) {
-            prefetchOfferings();
-        }
-    }, [offerings]);
+        prefetchOfferings();
+    }, []);
 
     const prefetchOfferings = async () => {
     try {
@@ -90,7 +87,6 @@ const ContextProvider = ({ children }) => {
     userDid,
     userId,
     email,
-    offerings,
     createOfferings,
     createTransaction,
     Transactions,
