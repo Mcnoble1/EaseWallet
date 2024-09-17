@@ -11,7 +11,7 @@ export const ResendOTPPasswordReset = Resend({
   async sendVerificationRequest({ identifier: email, provider, token }) {
     const resend = new ResendAPI(provider.apiKey);
     const { error } = await resend.emails.send({
-      from: "Easewallet <onboarding@easewallet.com>",
+      from: "Easewallet <festus@easewallet.xyz>",
       to: [email],
       subject: `Reset your Easewallet Password`,
       text: "Your password reset code is " + token,
