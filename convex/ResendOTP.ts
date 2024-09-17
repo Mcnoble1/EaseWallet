@@ -13,7 +13,7 @@ export const ResendOTP = Resend({
     console.log("Sending email to", email);
     console.log(resend);
     const { error } = await resend.emails.send({
-      from: "Easewallet <onboarding@resend.dev>",
+      from: "Easewallet <festus@easewallet.xyz>",
       to: [email],
       subject: `Verify your Easewallet account`,
       text: "Your verification code is " + token,
