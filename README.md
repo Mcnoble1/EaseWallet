@@ -18,6 +18,9 @@ Easewallet is a decentralized wallet application built on the **tbDEX SDK** to f
 - Onramp and Offramp payments
 - FX exchanges etc.
 
+**Quick Overview**
+https://github.com/user-attachments/assets/f40993b7-8094-4d7d-8f7c-7304153b4de4
+
 ## How the Application Addresses Design Considerations
 
 ### 1. **Profitability**
