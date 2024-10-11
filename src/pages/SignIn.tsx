@@ -22,16 +22,20 @@ const SignIn = () => {
         setLoading(true); 
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        signIn("password-code", formData).then(() =>
-          setStep({ email: formData.get("email") as string }),
+        signIn("password-code", formData).then(() => {
+          if (step === "signIn") {
+            navigate("/dashboard");
+          } else {
+            setStep({ email: formData.get("email") as string });
+            }
+          }
         ).catch((error) => {
           console.error(error);
           const title = step === "signIn"
               ? "Email or password incorrect, did you mean to sign up?"
-              : "Could not sign up, did you mean to sign in?";
+              : "Could not sign up, did you mean to log in?";
           toast.error( title, { autoclose: 3000 });
         });
-        // navigate("/dashboard");
         setLoading(false);
       }
 
@@ -156,7 +160,7 @@ const SignIn = () => {
                 disabled={loading}
               >
                 {/* {loading ? 'Signing In...' : 'Sign In'} */}
-                {step === "signIn" ? "Sign in" : "Sign up"}
+                {step === "signIn" ? "Log in" : "Sign up"}
               </button>
             </div>
               <p
@@ -183,12 +187,14 @@ const SignIn = () => {
                       setLoading(true);
                       const formData = new FormData(event.currentTarget);
                       signIn("password-code", formData)
-                        .catch((error) => {
+                      // .then(() => 
+                      //   navigate("/dashboard")
+                      // )
+                      .catch((error) => {
                         console.error(error);
                         const title = "Code could not be verified, please try again";
                         toast.error( title, { autoclose: 3000 });
                       });
-                      navigate("/dashboard");
                       setLoading(false);        
                     }}
                   >

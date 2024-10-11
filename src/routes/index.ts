@@ -2,6 +2,7 @@ import { lazy } from 'react';
 
 const Transactions = lazy(() => import('../pages/Transactions'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
+const Homepage = lazy(() => import('../pages/Homepage'));
 const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
 const SendMoney = lazy(() => import('../pages/Payments/SendMoney'));
 const Pfi = lazy(() => import('../pages/Payments/Pfi'));
@@ -43,6 +44,11 @@ const coreRoutes = [
     path: '/wallet',
     title: 'Wallet',
     component: Wallet,
+  },
+  {
+    path: '/',
+    title: 'Homepage',
+    component: Homepage,
   },
 ];
 

@@ -154,6 +154,9 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
     onNext();
   };
 
+  const [trades, setTrades] = useState(0);
+  const [completionRate, setCompletionRate] = useState(0);
+
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -204,8 +207,8 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
             </div>
 
             <div className='flex text-sm justify-between'>
-              <p>Trades: 12</p>
-              <p>Completion rate: 100%</p>
+              <p>Trades: {trades}</p>
+              <p>Completion rate: {completionRate}%</p>
             </div>
 
           </div>
@@ -960,7 +963,6 @@ const OrderStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep })
     </button>
   </div>
 )};
-
 
 // Main Component
 const SendMoney: React.FC = () => {

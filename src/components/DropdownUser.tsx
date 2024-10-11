@@ -7,11 +7,9 @@ const DropdownUser = () => {
   const navigate = useNavigate();
 
   const SignOut = () => {
-    signOut();
-    if (signOut) {
-      navigate('/');
-    }
-    // navigate('/signin');
+    (signOut().then(() => 
+      navigate("/")
+    ))
   }
 
   return (

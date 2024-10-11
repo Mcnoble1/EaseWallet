@@ -4,6 +4,7 @@ import { AppContext } from "./utils/AppContext";
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Dashboard from './pages/Dashboard';
+import Homepage from './pages/Homepage';
 import Profile from './pages/Profile';
 import SendMoney from './pages/Payments/SendMoney';
 import Pfi from './pages/Payments/Pfi';
@@ -36,12 +37,9 @@ function App() {
     <>
     <Toaster position='top-right' reverseOrder={false} containerClassName='overflow-auto'/>
       <AuthLoading><Loader /></AuthLoading>
-        <Routes>
-          <Route path="/" element={<SignIn />} />
-        </Routes>
         <Unauthenticated>
           <Routes>
-            {/* <Route path="/" element={<SignIn />} /> */}
+            <Route path="/" element={<Homepage />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
