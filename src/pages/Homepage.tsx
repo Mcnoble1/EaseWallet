@@ -12,7 +12,7 @@ const Homepage = () => {
         <div className="text-3xl font-bold text-yellow">Easewallet</div>
         <div className="space-x-8 text-lg">
         <Link to={'/signin'}>
-          <button className="bg-secondary px-4 py-2 rounded text-white">Get In</button>
+          <button className="bg-secondary px-4 py-2 rounded text-white">Get Started 🚀</button>
         </Link>
         </div>
       </nav>
@@ -29,8 +29,8 @@ const Homepage = () => {
         {/* Phone number input section */}
         <div className="flex items-center justify-center mb-4">
             <Link to={'/signin'}>
-                <button className="bg-secondary text-white px-6 py-2 ml-4 rounded">
-                    Get Started
+                <button className="bg-secondary text-white px-6 py-2 ml-4 rounded text-lg">
+                    Get Started 🚀
                 </button>
             </Link>
         </div>
@@ -46,33 +46,33 @@ const Homepage = () => {
       </div>
     </div>
 
-    <section className="flex justify-center items-center py-20 bg-white">
-      <div className="w-1/2">
+    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-white">
+      <div className="lg:w-1/2">
         <img src={PhoneImage} alt="Phone with app" className="h-100 w-100" />
       </div>
-      <div className="w-1/2 pl-10">
+      <div className="lg:w-1/2 pl-10">
         <h2 className="text-3xl font-bold">Open global accounts</h2>
         <p className="text-lg mt-4">Open accounts in US Dollars, Canadian Dollars, and Great British Pounds in minutes.</p>
         <button className="mt-6 bg-secondary text-white py-2 px-6 rounded-full">See more</button>
       </div>
     </section>
 
-    <section className="flex justify-center items-center py-20 bg-white">
-      <div className="w-1/2 pl-10">
+    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-white">
+      <div className="lg:w-1/2 pl-10">
         <h2 className="text-3xl font-bold">Currency conversion</h2>
         <p className="text-lg mt-4">Convert money from one currency to another on the Easewallet app at zero fees.</p>
         <button className="mt-6 bg-secondary text-white py-2 px-6 rounded-full">See more</button>
       </div>
-      <div className="w-1/2">
+      <div className="lg:w-1/2">
         <img src={ConversionImage} alt="Currency conversion feature" className="h-100 w-100" />
       </div>
     </section>
 
-    <section className="flex justify-center items-center py-20 bg-black text-white">
-      <div className="w-1/2">
+    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-black text-white">
+      <div className="lg:w-1/2">
         <img src={NoFeesImage} alt="Say bye-bye to fees" className="h-100 w-100" />
       </div>
-      <div className="w-1/2 pl-10">
+      <div className="lg:w-1/2 pl-10">
         <h2 className="text-4xl font-bold text-purple-400">Say bye-bye to fees</h2>
         <p className="text-lg mt-4">
           We charge <span className="bg-white text-black px-2 py-1 rounded">Zero transfer fees</span> for you to spend your own money. Take back control of your financial life with Easewallet.

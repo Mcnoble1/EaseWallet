@@ -187,9 +187,9 @@ const SignIn = () => {
                       setLoading(true);
                       const formData = new FormData(event.currentTarget);
                       signIn("password-code", formData)
-                      // .then(() => 
-                      //   navigate("/dashboard")
-                      // )
+                      .then(() => 
+                        navigate("/dashboard")
+                      )
                       .catch((error) => {
                         console.error(error);
                         const title = "Code could not be verified, please try again";
@@ -200,7 +200,7 @@ const SignIn = () => {
                   >
                     <div className='mb-5'>
                       <label className="mb-2.5 block font-medium text-white dark:text-white">
-                        Enter the verification code sent to your Email
+                        Enter the verification code sent to your Email (check your spam)
                       </label>
                       <div>
                         <input
