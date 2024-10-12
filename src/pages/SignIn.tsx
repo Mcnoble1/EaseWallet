@@ -139,7 +139,7 @@ const SignIn = () => {
                 <input name="flow" type="hidden" value={step} />
               </div>
 
-              <div className="mb-4">
+              {/* <div className="mb-4">
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -149,7 +149,7 @@ const SignIn = () => {
                 />
                 <span className="text-white">Remember Me</span>
               </label>
-            </div>
+            </div> */}
 
             <div className="mb-3">
             <button
@@ -169,7 +169,7 @@ const SignIn = () => {
                   setStep(step === "signIn" ? "signUp" : "signIn");
                 }}
               >
-                {step === "signIn" ? "Sign up instead" : "Sign in instead"}
+                {step === "signIn" ? "Sign up instead" : "Log in instead"}
               </p>
               {/* <div className="mb-9">
                 <p>

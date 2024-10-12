@@ -732,7 +732,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
             </div>
 
               <div>
-                <label className="mb-2.5 block text-white">Fee</label>
+                <label className="mb-2.5 block text-white">Fee (1%)</label>
                 <input
                   type="text"
                   name="fee"

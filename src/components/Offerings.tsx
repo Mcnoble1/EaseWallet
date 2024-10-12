@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 const Offerings = ({ pfiDid }) => {
     const navigate = useNavigate();
     const offeringsData = JSON.parse(localStorage.getItem('offerings') || '{}');
+    const [trades, setTrades] = useState<number>(0);
+    const [completionRate, setCompletionRate] = useState<number>(0);
 
     const formatTime = (seconds: number): string => {
       const hours = Math.floor(seconds / 3600);
@@ -57,8 +59,8 @@ const Offerings = ({ pfiDid }) => {
             </div>
 
             <div className='flex text-sm justify-between'>
-              <p>Trades: 12</p>
-              <p>Completion rate: 100%</p>
+              <p>Trades {trades}</p>
+              <p>Completion Rate {completionRate}%</p>
             </div>
           </div>
           // <button className="bg-primary text-white rounded-lg p-2 mt-4">Exchange</button>
