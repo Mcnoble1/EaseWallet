@@ -48,6 +48,39 @@ const countries = [
       answer: 'Easewallet works by leveraging blockchain to facilitate secure and efficient cross-border payments, allowing users to transfer funds quickly and cost-effectively.',
     },
   ];
+
+  const benefits = [
+    {
+      icon: '/assets/icons/african-reach.svg', // Replace with the actual path
+      title: 'African reach',
+      description: 'Trusted by millions of customers in 20 African countries for local fiat on & off ramps.',
+    },
+    {
+      icon: '/assets/icons/payment-methods.svg', // Replace with the actual path
+      title: 'Local payment methods',
+      description: 'Instant and localized payment methods including bank transfer and mobile money.',
+    },
+    {
+      icon: '/assets/icons/integration.svg', // Replace with the actual path
+      title: 'Ease of integration',
+      description: 'Quick and easy integration with your platform.',
+    },
+    {
+      icon: '/assets/icons/affordability.svg', // Replace with the actual path
+      title: 'Affordability',
+      description: 'We offer low fees and favorable rates for customers.',
+    },
+    {
+      icon: '/assets/icons/compliance.svg', // Replace with the actual path
+      title: 'Built-in compliance',
+      description: 'Our widget handles full KYC, AML, and transaction monitoring.',
+    },
+    {
+      icon: '/assets/icons/designed-for-africa.svg', // Replace with the actual path
+      title: 'Designed for Africa',
+      description: 'Designed and built with African customers in mind to drive high conversion.',
+    },
+  ];
   
 const Homepage = () => {
     const navigate = useNavigate();
@@ -201,6 +234,24 @@ const Homepage = () => {
             <p className="mt-4">{feature.description}</p>
           </div>
         ))}
+      </div>
+    </section>
+
+
+    <section className="bg-gray-100 py-16 mx-5">
+      <div className="container mx-auto text-center">
+        <h2 className="text-3xl md:text-4xl font-bold mb-12">
+          Why use Easewallet?
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {benefits.map((benefit, index) => (
+            <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+              <img src={benefit.icon} alt={benefit.title} className="w-16 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
+              <p className="text-gray-600">{benefit.description}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
 

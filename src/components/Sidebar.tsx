@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useEffect, useRef, useState, useContext } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { AppContext } from "../utils/AppContext";
 import Logo from '../images/logo/logo.png';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWallet, faUser, faMoneyBillTransfer, faTable, faMoneyCheck } from '@fortawesome/free-solid-svg-icons';
-import { faSlack } from '@fortawesome/free-brands-svg-icons';
+import { faWallet, faUser, faMoneyBillTransfer, faTable, faMoneyCheck, faSignOut } from '@fortawesome/free-solid-svg-icons';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -12,7 +12,9 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+  const { signOut } = useContext( AppContext );
   const location = useLocation();
+  const navigate = useNavigate();
   const { pathname } = location;
 
   const trigger = useRef<any>(null);
@@ -22,6 +24,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true'
   );
+
+  const SignOut = () => {
+    (signOut().then(() => 
+      navigate("/")
+    ))
+  }
 
   // close on click outside
   useEffect(() => {
@@ -101,8 +109,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <nav className="mt-2 py-4 px-4 lg:px-6">
           <div>
-            <ul className="mb-6 flex flex-col gap-1.5">
-
+            <ul className="mb-6 flex flex-col">
+            <div className='mb-35'>
              <li>
                 <NavLink
                   to="/dashboard"
@@ -219,6 +227,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Transactions
                 </NavLink>
               </li>
+              </div>
+
+              <div className='flex'>
+              <li 
+                onClick={SignOut}
+                className={`group relative cursor-pointer flex items-center gap-2.5 rounded-md py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-secondary`}
+              >
+                <FontAwesomeIcon icon={faSignOut} style={{color: "#fcfcfc"}} />
+                Logout
+              </li>
+              </div>
             </ul>
           </div>
         </nav>
