@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { FaTwitter, FaFacebookF, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
 import PhoneImage from "../images/money.png";
 import ConversionImage from "../images/world.png";
 import NoFeesImage from "../images/rocket.png";
@@ -18,30 +17,39 @@ const countries = [
     { name: 'AUD' },
     { name: 'BTC' },
     { name: 'USDC' },
-    // Add the rest of the countries here
   ];
 
-  const features = [
+const features = [
     {
-      title: 'PCI DSS',
-      description: 'EaseWallet is PCI DSS Level 1 certified. PCI DSS compliance is the Payment Card Industry Data Security Standard. It ensures that all companies that process, store.',
-      icon: '/icons/pci-dss.png', // Add your PCI DSS icon here
+      title: 'Secure & Compliant',
+      description: 'Built on tbDEX SDK, EaseWallet provides secure and compliant cross-border payments using blockchain technology and Decentralized Identifiers (DIDs).',
+      icon: '/icons/security.png', 
     },
     {
-      title: '24/7 Support',
-      description: '24/7 live support via chat and phone to provide assistance to real humans.',
-      icon: '/icons/support.png', // Add your Support icon here
+      title: 'DID & Verifiable Credentials',
+      description: 'Easewallet allows users to manage their decentralized identifiers (DIDs) and authenticate identity with Verifiable Credentials (VCs).',
+      icon: '/icons/did.png', 
     },
-  ];
+    {
+      title: 'Real-Time Updates',
+      description: 'Track your cross-border payments in real-time as they move through RFQs, quotes, and order completion.',
+      icon: '/icons/realtime.png',
+    },
+    {
+    title: '24/7 Support',
+    description: '24/7 live support via chat and phone to provide assistance to real humans.',
+    icon: '/icons/support.png',
+    },
+];
 
   const faqs = [
     {
-      question: 'Is Easewallet a bank?',
-      answer: 'Easewallet is a decentralized wallet service, not a bank. It facilitates cross-border payments using blockchain technology but does not offer banking services or store your funds.',
-    },
-    {
       question: 'Where is Easewallet available?',
       answer: 'Easewallet is available globally and supports various fiat and cryptocurrencies for seamless transactions across borders.',
+    },
+    {
+        question: 'Is EaseWallet a bank?',
+        answer: 'No, EaseWallet is a decentralized wallet application built to facilitate cross-border payments, not a traditional bank.',
     },
     {
       question: 'How does Easewallet work?',
@@ -50,37 +58,39 @@ const countries = [
   ];
 
   const benefits = [
+      {
+        icon: '/assets/icons/liquidity-providers.svg',
+        title: 'Multiple Liquidity Providers',
+        description: 'Choose the best offer from our sandbox of liquidity providers for the best rates and speeds.',
+      },
+      {
+        icon: '/assets/icons/low-fees.svg',
+        title: 'Low Fees',
+        description: 'We offer competitive, low fees on cross-border transactions.',
+      },
+      {
+        icon: '/assets/icons/rating-system.svg', 
+        title: 'PFI Ratings',
+        description: 'Review and rate Payment Facilitator Institutions (PFIs) after each transaction for transparency.',
+      },
+      {
+        icon: '/assets/icons/wallet-features.svg', 
+        title: 'Multi-Currency Wallet',
+        description: 'Hold, send, and receive multiple currencies securely within EaseWallet’s built-in wallet.',
+      },
     {
-      icon: '/assets/icons/african-reach.svg', // Replace with the actual path
-      title: 'African reach',
-      description: 'Trusted by millions of customers in 20 African countries for local fiat on & off ramps.',
-    },
-    {
-      icon: '/assets/icons/payment-methods.svg', // Replace with the actual path
+      icon: '/assets/icons/payment-methods.svg', 
       title: 'Local payment methods',
       description: 'Instant and localized payment methods including bank transfer and mobile money.',
     },
     {
-      icon: '/assets/icons/integration.svg', // Replace with the actual path
-      title: 'Ease of integration',
-      description: 'Quick and easy integration with your platform.',
-    },
-    {
-      icon: '/assets/icons/affordability.svg', // Replace with the actual path
-      title: 'Affordability',
-      description: 'We offer low fees and favorable rates for customers.',
-    },
-    {
-      icon: '/assets/icons/compliance.svg', // Replace with the actual path
-      title: 'Built-in compliance',
-      description: 'Our widget handles full KYC, AML, and transaction monitoring.',
-    },
-    {
-      icon: '/assets/icons/designed-for-africa.svg', // Replace with the actual path
+      icon: '/assets/icons/designed-for-africa.svg',
       title: 'Designed for Africa',
       description: 'Designed and built with African customers in mind to drive high conversion.',
     },
   ];
+
+
   
 const Homepage = () => {
     const navigate = useNavigate();
@@ -118,7 +128,7 @@ const Homepage = () => {
           Cross-border payments made easy
         </h1>
         <p className="text-xl mb-2">
-          Open multi-currency accounts. Send and receive funds globally with Easewallet.
+           Send and receive funds globally with EaseWallet, powered by tbDEX protocol.
         </p>
         <div className="flex justify-end">
             <img src={ConversionImage} alt="Global" className="h-80 w-80 lg:h-70 lg:w-70" />
@@ -138,27 +148,36 @@ const Homepage = () => {
       {/* Tagline Section */}
       <div className="text-center py-20">
         <section className="text-center py-20 text-black">
-        <h1 className="text-5xl font-bold">One platform for all your <span className="text-secondary">international</span> <br /> <span className="underline decoration-secondary">payments</span></h1>
+          <h1 className="text-5xl font-bold">Your platform for <span className="text-white rounded-2xl px-1 bg-tertiary">fast</span>, <span className="text-secondary">secure</span> and <br /> <span className="underline decoration-secondary">compliant</span> cross-border payments</h1>
         </section>
       </div>
     </div>
 
-    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-white">
+    <section className="flex flex-col lg:flex-row justify-center items-center py-10 bg-gray">
       <div className="lg:w-1/2">
         <img src={PhoneImage} alt="Phone with app" className="h-100 w-100" />
       </div>
       <div className="lg:w-1/2 pl-10">
         <h2 className="text-3xl font-bold">Open global accounts</h2>
         <p className="text-lg mt-4">Open accounts in US Dollars, Canadian Dollars, and Great British Pounds in minutes.</p>
-        <button className="mt-6 bg-secondary text-white py-2 px-6 rounded-full">See more</button>
       </div>
     </section>
 
-    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-white">
+        <section className="flex flex-col lg:flex-row justify-center items-center py-10 bg-white">
+          <div className="lg:w-1/2">
+            <img src={PhoneImage} alt="Phone with app" className="h-100 w-100" />
+          </div>
+          <div className="lg:w-1/2 pl-10">
+            <h2 className="text-3xl font-bold">Manage Multiple Currencies</h2>
+            <p className="text-lg mt-4">Hold, send, and receive funds in USD, GHS, EUR, BTC, and more through our decentralized wallet.</p>
+          </div>
+        </section>
+
+
+    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-gray">
       <div className="lg:w-1/2 pl-10">
         <h2 className="text-3xl font-bold">Currency conversion</h2>
         <p className="text-lg mt-4">Convert money from one currency to another on the Easewallet app at zero fees.</p>
-        <button className="mt-6 bg-secondary text-white py-2 px-6 rounded-full">See more</button>
       </div>
       <div className="lg:w-1/2">
         <img src={ConversionImage} alt="Currency conversion feature" className="h-100 w-100" />
@@ -172,7 +191,7 @@ const Homepage = () => {
       <div className="lg:w-1/2 pl-10">
         <h2 className="text-4xl font-bold text-purple-400">Say bye-bye to fees</h2>
         <p className="text-lg mt-4">
-          We charge <span className="bg-white text-black px-2 py-1 rounded">Zero transfer fees</span> for you to spend your own money. Take back control of your financial life with Easewallet.
+           Enjoy <span className="bg-white text-black px-2 py-1 rounded">Zero transfer fees</span> for cross-border payments. We charge a low, transparent flat fee for services.
         </p>
         <ul className="mt-6 space-y-4">
           <li className="flex items-center">
@@ -191,22 +210,6 @@ const Homepage = () => {
       </div>
     </section>
 
-    <section className="flex flex-col lg:flex-row justify-between items-center py-20 bg-gray-100 text-black">
-      <div className="lg:w-1/2 pl-10">
-        <h2 className="text-3xl font-bold mb-4">Easewallet is decentralized and available globally</h2>
-        <p className="text-lg mb-6">
-          We are growing and expanding fast, join our waitlist and get notified when PFIs from your country get onboarded.
-        </p>
-        <button className="bg-green-400 text-black px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary transition duration-300">
-          Join waitlist
-        </button>
-      </div>
-      <div className="w-1/2 flex justify-end">
-        <img src={PhoneImage} alt="Global" className="h-100 w-100" />
-      </div>
-    </section>
-
-
     <section className="py-20 bg-white text-black">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold">10+ Currencies across the world and Stables</h2>
@@ -222,11 +225,11 @@ const Homepage = () => {
       </div>
     </section>
 
-    <section className="py-20 bg-white text-black">
+    <section className="py-10 bg-white text-black">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold">How we protect your money and identity</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-10">
         {features.map((feature, index) => (
           <div key={index} className="p-6 border-2 rounded-lg shadow-lg text-center">
             <img src={feature.icon} alt={feature.title} className="w-16 h-16 mx-auto mb-4" />
@@ -238,7 +241,7 @@ const Homepage = () => {
     </section>
 
 
-    <section className="bg-gray-100 py-16 mx-5">
+    <section className="bg-gray-100 py-16 mx-10">
       <div className="container mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-12">
           Why use Easewallet?
@@ -255,7 +258,7 @@ const Homepage = () => {
       </div>
     </section>
 
-    <section className="py-20 bg-gray-50 text-black">
+    <section className="py-10 bg-gray-50 text-black">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold">Got questions?</h2>
         <p className="mt-2 text-lg">Some of the most frequently asked questions.</p>
@@ -274,37 +277,13 @@ const Homepage = () => {
             {activeIndex === index && <p className="mt-4">{faq.answer}</p>}
           </div>
         ))}
-        <div className="text-center mt-10">
-          <button className="px-6 py-3 bg-secondary text-white rounded-full">See general FAQs</button>
-        </div>
       </div>
     </section>
-
-    <section className="bg-purple-100 py-20">
-      <div className="container mx-auto px-6 text-center">
-        <h1 className="text-5xl font-bold text-black mb-6">
-          See for yourself how easy it is to move your money around the world with Easewallet.
-        </h1>
-        <p className="mb-8">
-          <button className="bg-green-600 text-white px-6 py-3 rounded-full text-lg hover:bg-green-700">
-            <span role="img" aria-label="phone">📱</span> Download now
-          </button>
-        </p>
-        <div className="flex justify-center">
-          <img
-            src="/path-to-your-image" // Update with the actual path to the app mockup
-            alt="Easewallet App"
-            className="max-w-xs sm:max-w-sm md:max-w-md"
-          />
-        </div>
-      </div>
-    </section>
-
 
     <section className="bg-white py-16">
       <div className="container mx-auto text-center">
         <h2 className="text-4xl font-bold mb-4">
-          Stay updated with Easewallet by signing up for our newsletter
+          Join our waitlist and get notified when we Ship 🚀
         </h2>
         <form onSubmit={handleSubmit} className="flex justify-center mt-6">
           <input
@@ -319,38 +298,14 @@ const Homepage = () => {
             type="submit"
             className="bg-secondary text-white px-8 py-4 rounded-r-full hover:bg-secondary-dark"
           >
-            Subscribe
+            Notify me
           </button>
         </form>
       </div>
     </section>
-
-
-    <footer className="bg-gray-100 py-12">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center">
-          <div className="text-center sm:text-left mb-6 sm:mb-0">
-            <h1 className="text-4xl font-bold text-secondary">Easewallet</h1>
-          </div>
-        </div>
-        <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center sm:text-left">
-          <div>
-            <h4 className="font-semibold">Products</h4>
-            <ul>
-              <li>Cross-border Payments</li>
-              <li>Crypto Wallet</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold">Support</h4>
-            <ul>
-              <li>Contact Us</li>
-              <li>Submit a Request</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </footer>
+        <footer className="py-10 bg-tertiary text-white text-center">
+          <p>© 2024 EaseWallet - All Rights Reserved.</p>
+        </footer>
     </>
     
   );
