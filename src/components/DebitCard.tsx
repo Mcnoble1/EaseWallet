@@ -59,11 +59,11 @@ const AddCard = ({ userId }) => {
   };
 
   return (
-    <div className="p-6 bg-gray rounded-lg">
+    <div className="p-6 bg-teriary rounded-lg">
       <h2 className="text-xl font-bold mb-4">Add Credit/Debit Card</h2>
 
       {error && <p className="text-danger mb-4">{error}</p>}
-      {status && <p className="text-green-600 mb-4">{status}</p>}
+      {status && <p className="text-green mb-4">{status}</p>}
 
       <div className="mb-4">
         <label className="block font-medium">Card Number</label>
@@ -72,8 +72,8 @@ const AddCard = ({ userId }) => {
           name="cardNumber"
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value)}
-          className="p-2 border rounded w-full"
-          maxLength={16} // Limit to 16 characters
+          className="p-2 border rounded w-full bg-transparent"
+          maxLength={16} 
         />
       </div>
 
@@ -85,7 +85,7 @@ const AddCard = ({ userId }) => {
             name="expiryMonth"
             value={expiryMonth}
             onChange={(e) => setExpiryMonth(e.target.value)}
-            className="p-2 border rounded w-full"
+            className="p-2 border rounded w-full bg-transparent"
             placeholder="MM"
             min={1}
             max={12}
@@ -99,10 +99,10 @@ const AddCard = ({ userId }) => {
             value={expiryYear}
             name='expiryYear'
             onChange={(e) => setExpiryYear(e.target.value)}
-            className="p-2 border rounded w-full"
+            className="p-2 border rounded w-full bg-transparent"
             placeholder="YYYY"
             maxLength={4}
-            min={new Date().getFullYear()} // Ensure only future years are allowed
+            min={new Date().getFullYear()}
           />
         </div>
       </div>
@@ -114,8 +114,8 @@ const AddCard = ({ userId }) => {
           name='cvc'
           value={cvc}
           onChange={(e) => setCvc(e.target.value)}
-          className="p-2 border rounded w-full"
-          maxLength={3} // Limit to 3 characters
+          className="p-2 border rounded w-full bg-transparent"
+          maxLength={3} 
         />
       </div>
 

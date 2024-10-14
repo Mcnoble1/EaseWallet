@@ -148,22 +148,12 @@ const Homepage = () => {
       {/* Tagline Section */}
       <div className="text-center py-20">
         <section className="text-center py-20 text-black">
-          <h1 className="text-5xl font-bold">Your platform for <span className="text-white rounded-2xl px-1 bg-tertiary">fast</span>, <span className="text-secondary">secure</span> and <br /> <span className="underline decoration-secondary">compliant</span> cross-border payments</h1>
+          <h1 className="text-5xl font-bold">Your platform for <span className="text-secondary">fast</span>, <span className="text-secondary">secure</span> and <br /> <span className="text-secondary">compliant</span> cross-border payments</h1>
         </section>
       </div>
     </div>
 
-    <section className="flex flex-col lg:flex-row justify-center items-center py-10 bg-gray">
-      <div className="lg:w-1/2">
-        <img src={PhoneImage} alt="Phone with app" className="h-100 w-100" />
-      </div>
-      <div className="lg:w-1/2 pl-10">
-        <h2 className="text-3xl font-bold">Open global accounts</h2>
-        <p className="text-lg mt-4">Open accounts in US Dollars, Canadian Dollars, and Great British Pounds in minutes.</p>
-      </div>
-    </section>
-
-        <section className="flex flex-col lg:flex-row justify-center items-center py-10 bg-white">
+        <section className="flex flex-col lg:flex-row justify-center items-center py-10 bg-gray">
           <div className="lg:w-1/2">
             <img src={PhoneImage} alt="Phone with app" className="h-100 w-100" />
           </div>
@@ -174,7 +164,7 @@ const Homepage = () => {
         </section>
 
 
-    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-gray">
+    <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-white">
       <div className="lg:w-1/2 pl-10">
         <h2 className="text-3xl font-bold">Currency conversion</h2>
         <p className="text-lg mt-4">Convert money from one currency to another on the Easewallet app at zero fees.</p>
@@ -191,22 +181,8 @@ const Homepage = () => {
       <div className="lg:w-1/2 pl-10">
         <h2 className="text-4xl font-bold text-purple-400">Say bye-bye to fees</h2>
         <p className="text-lg mt-4">
-           Enjoy <span className="bg-white text-black px-2 py-1 rounded">Zero transfer fees</span> for cross-border payments. We charge a low, transparent flat fee for services.
+           Enjoy <span className="bg-white text-black px-2 py-1 rounded">low transfer fees</span> for cross-border payments. We charge a low, transparent flat fee for services.
         </p>
-        <ul className="mt-6 space-y-4">
-          <li className="flex items-center">
-            <img src={PhoneImage} alt="No monthly fees" className="w-8 h-8 mr-4" />
-            No monthly or subscription fees
-          </li>
-          <li className="flex items-center">
-            <img src={ConversionImage} alt="No minimum balance" className="w-8 h-8 mr-4" />
-            No minimum balance
-          </li>
-          <li className="flex items-center">
-            <img src={NoFeesImage} alt="Zero foreign transfer fees" className="w-8 h-8 mr-4" />
-            Zero foreign transfer fees
-          </li>
-        </ul>
       </div>
     </section>
 
@@ -258,7 +234,7 @@ const Homepage = () => {
       </div>
     </section>
 
-    <section className="py-10 bg-gray-50 text-black">
+    <section className="py-10 bg-gray-50 text-black mx-10">
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold">Got questions?</h2>
         <p className="mt-2 text-lg">Some of the most frequently asked questions.</p>

@@ -1,28 +1,31 @@
 import React from 'react';
-import One from '../images/user/1.png';
-import Two from '../images/user/3.png';
-import Three from '../images/user/4.png';
+import One from '../images/user/1.jpg';
+import Two from '../images/user/2.jpg';
+import Three from '../images/user/3.jpg';
+import Four from '../images/user/4.jpg';
+import Five from '../images/user/5.jpg';
+import Six from '../images/user/6.jpg';
+import Seven from '../images/user/7.jpg';
+import Eight from '../images/user/8.jpg';
+import Nine from '../images/user/9.jpg';
+
 interface Review {
   rating: number;
   review: string;
   name: string;
   pfi: string;
-  transaction: string;  // Added transaction field
+  transaction: string; 
 }
 
 interface ReviewsListProps {
   reviews: Review[];
 }
 
-// List of dummy avatars
 const avatars = [
-  One,
-  Two,
-  Three,
+  One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
 ];
 
 const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
-  // Calculate the average rating
   const averageRating = reviews?.length > 0
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;

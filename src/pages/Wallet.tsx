@@ -108,8 +108,8 @@ const Wallet = ({ user }) => {
               )}
 
               {showAddCardModal && (
-                <div className="fixed inset-0 z-999 flex items-center justify-center bg-gray-900 bg-opacity-50">
-                  <div className="bg-gray p-6 rounded-lg relative">
+                <div className="fixed inset-0 z-999 flex items-center justify-center text-white bg-tertiary bg-opacity-50">
+                  <div className="bg-tertiary p-6 rounded-lg relative border border-gray mx-5">
                     <FontAwesomeIcon
                       icon={faTimes}
                       className="absolute top-2 right-2 text-xl cursor-pointer"
@@ -121,8 +121,8 @@ const Wallet = ({ user }) => {
               )}
 
               {showAddBankModal && (
-                <div className="fixed inset-0 flex z-999 items-center justify-center bg-gray-900 bg-opacity-50">
-                  <div className="bg-gray p-6 rounded-lg relative">
+                <div className="fixed inset-0 flex z-999 text-white items-center justify-center bg-tertiary bg-opacity-50">
+                  <div className="bg-tertiary p-6 rounded-lg relative border border-gray mx-5">
                     <FontAwesomeIcon
                       icon={faTimes}
                       className="absolute top-2 right-2 text-xl cursor-pointer"
