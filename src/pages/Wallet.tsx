@@ -29,16 +29,16 @@ const Wallet = ({ user }) => {
   // }, [navigate]);
 
   useEffect(() => {
-    const fetchPaymentMethods = async () => {
-      const cardResponse = await fetch(`/api/wallet/${user?.id}/cards`);
-      const cardData = await cardResponse.json();
-      setCards(cardData);
+    // const fetchPaymentMethods = async () => {
+    //   const cardResponse = await fetch(`/api/wallet/${user?.id}/cards`);
+    //   const cardData = await cardResponse.json();
+    //   setCards(cardData);
 
-      const bankResponse = await fetch(`/api/wallet/${user?.id}/bankAccounts`);
-      const bankData = await bankResponse.json();
-      setBankAccounts(bankData);
-    };
-    fetchPaymentMethods();
+    //   const bankResponse = await fetch(`/api/wallet/${user?.id}/bankAccounts`);
+    //   const bankData = await bankResponse.json();
+    //   setBankAccounts(bankData);
+    // };
+    // fetchPaymentMethods();
   }, [user?.id]);
 
   return (

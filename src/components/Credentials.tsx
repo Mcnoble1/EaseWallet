@@ -29,7 +29,8 @@ const Credentials = ({userDID}: any) => {
 
   const saveVcJWT = useMutation(api.vcs.createVcJWT);
   const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });  
-  const credentialJWT = localStorage.getItem('credentialJWT') || '';
+  // const credentialJWT = localStorage.getItem('credentialJWT') || '';
+  const credentialJWT = getVcJWT[0].vcJWT;
 
 
   const togglePopup = (userId: string) => {
@@ -81,7 +82,7 @@ const Credentials = ({userDID}: any) => {
               name: '',
               countryCode: '',
             })
-            window.location.reload();
+            fetchCredential();
             setPopupOpen(false);
         })
         .catch((error) => {
@@ -96,8 +97,6 @@ const Credentials = ({userDID}: any) => {
     }
     fetchCredential();
   }, []);
-
-  // console.log(getVcJWT);
 
   const fetchCredential = () => {
     const vc: any = Jwt.parse({ jwt: credentialJWT }).decoded.payload['vc']
@@ -180,6 +179,7 @@ const Credentials = ({userDID}: any) => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
+                                placeholder='John Doe'
                                 required
                                 className="w-full rounded-lg border-[1.5px] border-stroke bg-tertiary py-3 px-5 font-medium outline-none"
                             >

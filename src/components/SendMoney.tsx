@@ -219,7 +219,10 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
 };
 
 const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
+  const { userId } = useContext(AppContext);
+
   const credential = localStorage.getItem('credentialJWT');
+  const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });  
   const navigate = useNavigate();
 
   const satisfiesOfferingRequirements = (offering: any, credentials: string[]) => {
@@ -244,7 +247,7 @@ const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ sele
     const satisfiesRequirements = satisfiesOfferingRequirements(selectedOffering, credentials);
 
     if (satisfiesRequirements) {
-      toast.success("KYC successful! Proceed to request for a Quote");
+      toast.success("KYC successful! Proceed to request for a Quote", { autoClose: 2000 });
       // onNext();
     } else {
       toast.error("KYC failed! Complete Verification to proceed");
@@ -315,7 +318,7 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
   const createTransaction = useMutation(api.transactions.createTransaction);
   const updateTransaction = useMutation(api.transactions.updateTransaction);
   const transactions = useQuery(api.transactions.getUserTransactions, { userId: userId }); 
-  console.log("transactions", transactions);
+  // console.log("transactions", transactions);
 
   const validateField = (name, value) => {
     let error = '';
