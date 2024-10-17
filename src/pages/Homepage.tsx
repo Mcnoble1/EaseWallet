@@ -2,6 +2,16 @@ import { useState } from "react";
 import PhoneImage from "../images/money.png";
 import ConversionImage from "../images/world.png";
 import NoFeesImage from "../images/rocket.png";
+import Compliance from "../images/compliance.png";
+import Time from "../images/time.png";
+import Support from "../images/support.png";
+import Credentials from "../images/credentials.png";
+import Pfis from "../images/pfis.png";
+import Wallets from "../images/wallets.png";
+import Africa from "../images/africa.png";
+import Fees from "../images/fees.png";
+import Ratings from "../images/ratings.png";
+import Methods from "../images/methods.png"; 
 import { Link, useNavigate } from 'react-router-dom';
 import { currencyIcons } from "../utils/helpers";
 
@@ -23,22 +33,22 @@ const features = [
     {
       title: 'Secure & Compliant',
       description: 'Built on tbDEX SDK, EaseWallet provides secure and compliant cross-border payments using blockchain technology and Decentralized Identifiers (DIDs).',
-      icon: '/icons/security.png', 
+      icon: Compliance,
     },
     {
       title: 'DID & Verifiable Credentials',
       description: 'Easewallet allows users to manage their decentralized identifiers (DIDs) and authenticate identity with Verifiable Credentials (VCs).',
-      icon: '/icons/did.png', 
+      icon: Credentials, 
     },
     {
       title: 'Real-Time Updates',
       description: 'Track your cross-border payments in real-time as they move through RFQs, quotes, and order completion.',
-      icon: '/icons/realtime.png',
+      icon: Time,
     },
     {
     title: '24/7 Support',
     description: '24/7 live support via chat and phone to provide assistance to real humans.',
-    icon: '/icons/support.png',
+    icon: Support,
     },
 ];
 
@@ -53,38 +63,38 @@ const features = [
     },
     {
       question: 'How does Easewallet work?',
-      answer: 'Easewallet works by leveraging blockchain to facilitate secure and efficient cross-border payments, allowing users to transfer funds quickly and cost-effectively.',
+      answer: 'Easewallet works by leveraging tbDEX protocol to facilitate secure and efficient cross-border payments, allowing users to transfer funds quickly and cost-effectively.',
     },
   ];
 
   const benefits = [
       {
-        icon: '/assets/icons/liquidity-providers.svg',
+        icon: Pfis,
         title: 'Multiple Liquidity Providers',
         description: 'Choose the best offer from our sandbox of liquidity providers for the best rates and speeds.',
       },
       {
-        icon: '/assets/icons/low-fees.svg',
+        icon:  Fees,
         title: 'Low Fees',
         description: 'We offer competitive, low fees on cross-border transactions.',
       },
       {
-        icon: '/assets/icons/rating-system.svg', 
+        icon: Ratings,
         title: 'PFI Ratings',
-        description: 'Review and rate Payment Facilitator Institutions (PFIs) after each transaction for transparency.',
+        description: 'Review and rate Participating Financial Institutions (PFIs) after each transaction for transparency.',
       },
       {
-        icon: '/assets/icons/wallet-features.svg', 
+        icon: Wallets,
         title: 'Multi-Currency Wallet',
         description: 'Hold, send, and receive multiple currencies securely within EaseWallet’s built-in wallet.',
       },
     {
-      icon: '/assets/icons/payment-methods.svg', 
+      icon: Methods, 
       title: 'Local payment methods',
       description: 'Instant and localized payment methods including bank transfer and mobile money.',
     },
     {
-      icon: '/assets/icons/designed-for-africa.svg',
+      icon: Africa,
       title: 'Designed for Africa',
       description: 'Designed and built with African customers in mind to drive high conversion.',
     },
@@ -159,7 +169,7 @@ const Homepage = () => {
           </div>
           <div className="lg:w-1/2 pl-10">
             <h2 className="text-3xl font-bold">Manage Multiple Currencies</h2>
-            <p className="text-lg mt-4">Hold, send, and receive funds in USD, GHS, EUR, BTC, and more through our decentralized wallet.</p>
+            <p className="text-lg mt-4">Hold, send, and receive funds in USD, GHS, NGN, KES, BTC, and more through our decentralized wallet.</p>
           </div>
         </section>
 
@@ -167,7 +177,7 @@ const Homepage = () => {
     <section className="flex flex-col lg:flex-row justify-center items-center py-20 bg-white">
       <div className="lg:w-1/2 pl-10">
         <h2 className="text-3xl font-bold">Currency conversion</h2>
-        <p className="text-lg mt-4">Convert money from one currency to another on the Easewallet app at zero fees.</p>
+        <p className="text-lg mt-4">Convert money from one currency to another on the Easewallet app.</p>
       </div>
       <div className="lg:w-1/2">
         <img src={ConversionImage} alt="Currency conversion feature" className="h-100 w-100" />
@@ -179,9 +189,9 @@ const Homepage = () => {
         <img src={NoFeesImage} alt="Say bye-bye to fees" className="h-100 w-100" />
       </div>
       <div className="lg:w-1/2 pl-10">
-        <h2 className="text-4xl font-bold text-purple-400">Say bye-bye to fees</h2>
+        <h2 className="text-4xl font-bold text-purple-400">Say bye-bye to high fees</h2>
         <p className="text-lg mt-4">
-           Enjoy <span className="bg-white text-black px-2 py-1 rounded">low transfer fees</span> for cross-border payments. We charge a low, transparent flat fee for services.
+           Enjoy low transfer fees for cross-border payments. We charge a low, transparent flat fee for services.
         </p>
       </div>
     </section>

@@ -6,8 +6,6 @@ import { PFIs } from './helpers';
 import { TbdexHttpClient } from '@tbdex/http-client';
 import { DidDht } from '@web5/dids'
 
-
-import { toast } from 'react-toastify'; 
 import 'react-toastify/dist/ReactToastify.css'; 
 
 export const AppContext = createContext();
@@ -28,8 +26,6 @@ const ContextProvider = ({ children }) => {
     // const offerings = useQuery(api.offerings.getOfferings);
     const createTransaction = useMutation(api.transactions.createTransaction);
     const Transactions = useQuery(api.transactions.getTransactions);
-    // const userTransactions = useQuery(api.transactions.getUserTransactions, { userId: userId });
-    // const pfiReviews = useQuery(api.reviews.getPfiReviews, { userId: userId });
     const reviews = useQuery(api.reviews.getReviews);
     const createReview = useMutation(api.reviews.createReview);
     const updateTransaction = useMutation(api.transactions.updateTransaction);
@@ -90,8 +86,6 @@ const ContextProvider = ({ children }) => {
     createOfferings,
     createTransaction,
     Transactions,
-    // userTransactions,
-    // pfiReviews,
     reviews,
     createReview,
     updateTransaction,
