@@ -309,7 +309,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const credential = localStorage.getItem('credentialJWT');
+  const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });  
+  const credential = getVcJWT[0]?.vcJWT || '';
   const credentials = credential ? [credential] : [];
   const did = localStorage.getItem('userDid');
   const [payinMethodDetails, setPayinMethodDetails] = useState(null);
