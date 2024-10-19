@@ -221,8 +221,9 @@ const OfferingsStep: React.FC<{ offerings: any[]; onNext: () => void; onSelectOf
 const KycStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ selectedOffering, onNext }) => {
   const { userId } = useContext(AppContext);
 
-  const credential = localStorage.getItem('credentialJWT');
+  // const credential = localStorage.getItem('credentialJWT');
   const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });  
+  const credential = getVcJWT[0]?.vcJWT || '';
   const navigate = useNavigate();
 
   const satisfiesOfferingRequirements = (offering: any, credentials: string[]) => {
