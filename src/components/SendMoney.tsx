@@ -950,8 +950,8 @@ const QuoteStep: React.FC<{ selectedOffering: any; onNext: () => void }> = ({ se
 const OrderStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep }) => {
   const navigate = useNavigate();
   const goHome = () => {
-  // navigate('/dashboard');
-  goToStep(0)
+  navigate('/dashboard');
+  // goToStep(0)
   }
 
   return (
@@ -969,6 +969,19 @@ const OrderStep: React.FC<{ goToStep: (step: number) => void }> = ({ goToStep })
 
 // Main Component
 const SendMoney: React.FC = () => {
+  const navigate = useNavigate();
+  const { userId } = useContext(AppContext);
+
+  useEffect(() => {
+    const validateUser = async () => {
+      console.log('Validating user...', userId);
+    if (userId === null) {
+      navigate('/signin');
+    }
+  };
+  validateUser();
+  }, [navigate]);
+
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [offerings, setOfferings] = useState<any[]>([]);
 const [selectedOffering, setSelectedOffering] = useState<any>(null);

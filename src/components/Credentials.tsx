@@ -30,7 +30,7 @@ const Credentials = ({userDID}: any) => {
   const saveVcJWT = useMutation(api.vcs.createVcJWT);
   const getVcJWT = useQuery(api.vcs.getVcJWT, { userId: userId });  
   // const credentialJWT = localStorage.getItem('credentialJWT') || '';
-  const credentialJWT = getVcJWT[0].vcJWT;
+  const credentialJWT = getVcJWT[0]?.vcJWT || '';
 
 
   const togglePopup = (userId: string) => {
@@ -75,14 +75,19 @@ const Credentials = ({userDID}: any) => {
         },
         })
         .then((response) => {
-            localStorage.setItem('credentialJWT', response.data)
             saveVcJWT({ userId: userId, vcJWT: response.data });
+            const vc: any = Jwt.parse({ jwt: response.data }).decoded.payload['vc']
+            setCredentialDetails({
+            title: vc.type[vc.type.length - 1].replace(/(?<!^)(?<![A-Z])[A-Z](?=[a-z])/g, ' $&'),
+            name: vc.credentialSubject['name'],
+            countryCode: vc.credentialSubject['countryOfResidence'],
+            issuanceDate: new Date(vc.issuanceDate).toLocaleDateString(undefined, {dateStyle: 'medium'}),
+            });
             setLoading(false);
             setFormData({
               name: '',
               countryCode: '',
-            })
-            fetchCredential();
+            });
             setPopupOpen(false);
         })
         .catch((error) => {
@@ -92,7 +97,7 @@ const Credentials = ({userDID}: any) => {
 
 
   useEffect(() => {
-    if (!credentialJWT) {
+    if (!credentialJWT ) {
       return;
     }
     fetchCredential();

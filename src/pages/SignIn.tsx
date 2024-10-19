@@ -62,7 +62,7 @@ const SignIn = () => {
                     name='email'
                     type="email"
                     placeholder="Email address"
-                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                    className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:focus:border-primary"
                     required
                   />
                 </div>
@@ -155,11 +155,9 @@ const SignIn = () => {
             <button
                 type="submit"
                 className={`w-full cursor-pointer rounded-lg border border-primary bg-secondary p-4 text-white transition hover:bg-opacity-90 ${
-                  loading ? 'opacity-50 cursor-wait' : '' 
-                }`}
+                  loading ? 'opacity-50 cursor-wait animate-spin' : ''                }`}
                 disabled={loading}
               >
-                {/* {loading ? 'Signing In...' : 'Sign In'} */}
                 {step === "signIn" ? "Log in" : "Sign up"}
               </button>
             </div>
@@ -217,8 +215,9 @@ const SignIn = () => {
                     <div className='flex gap-5'>
                       <button
                           type="submit"
+                          // onClick={() => setLoading(true)}
                           className={`w-full cursor-pointer rounded-lg border border-primary bg-secondary p-4 text-white transition hover:bg-opacity-90 ${
-                            loading ? 'opacity-50 cursor-wait' : ''
+                            loading ? 'opacity-50 cursor-wait animate-spin' : ''
                           }`}
                           disabled={loading}
                         >

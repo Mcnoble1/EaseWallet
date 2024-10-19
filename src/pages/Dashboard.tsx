@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { AppContext } from '../utils/AppContext';
 import { useNavigate } from 'react-router-dom'; 
 import Header from '../components/Header';
@@ -14,14 +15,14 @@ const Dashboard = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // useEffect(() => {
-  //   const validateUser = async () => {
-  //   if (!userId) {
-  //     navigate('/');
-  //   }
-  // };
-  // validateUser();
-  // }, [navigate]);
+  useEffect(() => {
+    const validateUser = async () => {
+    if (!userId) {
+      navigate('/');
+    }
+  };
+  validateUser();
+  }, [navigate]);
 
 
   return (

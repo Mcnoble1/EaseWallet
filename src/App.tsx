@@ -41,9 +41,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/signin/forgot-password" element={<ForgotPassword />} />
           </Routes>
         </Unauthenticated>
         <Authenticated>

@@ -45,7 +45,7 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
             <div key={index} className="bg-tertiary p-4 mb-4 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
                 <img
-                  src={avatars[index % avatars.length]}
+                  src={avatars[Math.floor(Math.random() * avatars.length)]}
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full mr-4"
                 />

@@ -1,31 +1,5 @@
-//         <main>
-//           <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-//           <div className="flex h-25 justify-between rounded-lg bg-tertiary py-3 px-7.5 shadow-default">
-//             <div className="flex justify-between">
-//               <div className='inline-flex space-x-3 justify-between'>
-//                 <p className="text-white text-lg font-bold">Your DID: {userDid?.slice(0, 20) + "..." + userDid?.slice(-8)}</p>
-//                 <button
-//                     className="flex gap-2"
-//                     onClick={handleCopy}
-//                     type="button"
-//                   >
-//                    <FontAwesomeIcon icon={faCopy} style={{color: "#ffffff",}} />
-//                     <div>
-//                       {isCopied ? (
-//                         <p className="bg-primary text-sm text-white p-1 rounded-3xl">
-//                           Copied!
-//                         </p>
-//                       ) : (
-//                         ""
-//                       )}
-//                     </div>
-//                   </button>
-//               </div>
-//             </div>
-   
-
-
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../utils/AppContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
@@ -35,11 +9,24 @@ import Credentials from '../components/Credentials.tsx';
 import welcome from '../images/user/welcome.svg';
 
 const Profile = () => {
-  const { userDid, initializeDid } = useContext(AppContext);
+  const { userDid, initializeDid, userId, signOut } = useContext(AppContext);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showDid, setShowDid] = useState(false);
-  const [file, setFile] = useState(null); // To store the imported file content
+  const [file, setFile] = useState(null); 
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const validateUser = async () => {
+    if (!userId) {
+        (signOut().then(() => 
+          navigate("/")
+        ))
+    }
+  };
+  validateUser();
+  }, [navigate]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(userDid);
